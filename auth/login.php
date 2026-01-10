@@ -119,12 +119,12 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAxNsQWe2L5bhMpr5VfEJhctgciZE7ARso",
-            authDomain: "grab-and-go-1ed06.firebaseapp.com",
-            projectId: "grab-and-go-1ed06",
-            storageBucket: "grab-and-go-1ed06.firebasestorage.app",
-            messagingSenderId: "105107871688",
-            appId: "1:105107871688:web:081dbc2bd5ae78088b92fd"
+            apiKey: "<?php echo FIREBASE_API_KEY; ?>",
+            authDomain: "<?php echo FIREBASE_AUTH_DOMAIN; ?>",
+            projectId: "<?php echo FIREBASE_PROJECT_ID; ?>",
+            storageBucket: "<?php echo FIREBASE_STORAGE_BUCKET; ?>",
+            messagingSenderId: "<?php echo FIREBASE_MESSAGING_SENDER_ID; ?>",
+            appId: "<?php echo FIREBASE_APP_ID; ?>"
         };
         
         // Initialize Firebase

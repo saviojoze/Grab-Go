@@ -34,6 +34,15 @@ define('SMTP_USERNAME', getenv('SMTP_USERNAME'));
 define('SMTP_PASSWORD', getenv('SMTP_PASSWORD'));
 define('SMTP_FROM_EMAIL', getenv('SMTP_FROM_EMAIL'));
 define('SMTP_FROM_NAME', getenv('SMTP_FROM_NAME') ?: 'Grab & Go');
+define('BASE_URL', getenv('BASE_URL') ?: '/Mini%20Project/');
+
+// Firebase Configuration
+define('FIREBASE_API_KEY', getenv('FIREBASE_API_KEY'));
+define('FIREBASE_AUTH_DOMAIN', getenv('FIREBASE_AUTH_DOMAIN'));
+define('FIREBASE_PROJECT_ID', getenv('FIREBASE_PROJECT_ID'));
+define('FIREBASE_STORAGE_BUCKET', getenv('FIREBASE_STORAGE_BUCKET'));
+define('FIREBASE_MESSAGING_SENDER_ID', getenv('FIREBASE_MESSAGING_SENDER_ID'));
+define('FIREBASE_APP_ID', getenv('FIREBASE_APP_ID'));
 
 
 
@@ -88,6 +97,4 @@ function redirect($url) {
     exit();
 }
 
-// Base URL configuration
-define('BASE_URL', '/Mini%20Project/');
 ?>
