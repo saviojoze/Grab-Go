@@ -8,9 +8,11 @@
 // ============================================
 const Cart = {
     // Add item to cart
-    addItem: async function (productId, quantity = 1) {
+    addItem: async function (productId, quantity = 1, silent = false) {
+        console.log(`[Cart] Adding item: ID=${productId}, Qty=${quantity}, Slient=${silent}`);
         try {
-            const response = await fetch('/Mini%20Project/cart/cart-api.php', {
+            const baseUrl = window.GRAB_AND_GO_BASE_URL || '/Mini%20Project/';
+            const response = await fetch(baseUrl + 'cart/cart-api.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -22,26 +24,66 @@ const Cart = {
                 })
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const data = await response.json();
+            console.log('[Cart] API Response:', data);
 
             if (data.success) {
                 this.updateCartBadge(data.cart_count);
-                this.showNotification('Item added to cart!', 'success');
+                if (!silent) {
+                    this.showNotification('Item added to cart!', 'success');
+                }
             } else {
-                this.showNotification(data.message || 'Failed to add item', 'error');
+                if (!silent) {
+                    this.showNotification(data.message || 'Failed to add item', 'error');
+                }
             }
 
             return data;
         } catch (error) {
-            console.error('Error adding to cart:', error);
-            this.showNotification('An error occurred', 'error');
+            console.error('[Cart] Error in addItem:', error);
+            if (!silent) {
+                this.showNotification('An error occurred while adding item', 'error');
+            }
+            return { success: false, message: error.message };
+        }
+    },
+
+    // Buy now (add to cart and redirect to checkout)
+    buyNow: async function (productId, quantity = 1) {
+        console.log(`[Cart] Buy Now triggered: ID=${productId}`);
+        const data = await this.addItem(productId, quantity, true);
+
+        if (data && data.success) {
+            const rawBaseUrl = window.GRAB_AND_GO_BASE_URL || '/Mini Project/';
+            const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : rawBaseUrl + '/';
+            console.log(`[Cart] Buy Now success, redirecting to: ${baseUrl}checkout/checkout.php`);
+            window.location.href = encodeURI(baseUrl + 'checkout/checkout.php');
+        } else {
+            console.error('[Cart] Buy Now failed:', data);
+            const msg = data ? (data.message || 'Failed to proceed to buy') : 'Unexpected error';
+
+            // If not logged in, redirect to login page
+            if (data && data.message && (data.message.toLowerCase().includes('login') || data.message.toLowerCase().includes('authenticate'))) {
+                const rawBaseUrl = window.GRAB_AND_GO_BASE_URL || '/Mini Project/';
+                const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : rawBaseUrl + '/';
+                window.location.href = encodeURI(baseUrl + 'auth/login.php');
+                return;
+            }
+
+            alert('Error: ' + msg); // Aggressive reporting for the user
+            this.showNotification(msg, 'error');
         }
     },
 
     // Update item quantity
     updateQuantity: async function (cartId, quantity) {
         try {
-            const response = await fetch('/Mini%20Project/cart/cart-api.php', {
+            const baseUrl = window.GRAB_AND_GO_BASE_URL || '/Mini%20Project/';
+            const response = await fetch(baseUrl + 'cart/cart-api.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,7 +112,8 @@ const Cart = {
         if (!confirm('Remove this item from cart?')) return;
 
         try {
-            const response = await fetch('/Mini%20Project/cart/cart-api.php', {
+            const baseUrl = window.GRAB_AND_GO_BASE_URL || '/Mini%20Project/';
+            const response = await fetch(baseUrl + 'cart/cart-api.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -203,23 +246,54 @@ function initQuantityControls() {
 }
 
 // ============================================
-// Add to Cart Buttons
+// Button Event Listeners (using delegation)
 // ============================================
-function initAddToCartButtons() {
-    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-        button.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const productId = button.dataset.productId;
-            const quantity = button.dataset.quantity || 1;
+function initButtonDelegation() {
+    document.addEventListener('click', async (e) => {
+        try {
+            // Add to Cart Logic
+            const addBtn = e.target.closest('.add-to-cart-btn');
+            if (addBtn) {
+                e.preventDefault();
+                const productId = addBtn.dataset.productId;
+                const quantity = parseInt(addBtn.dataset.quantity) || 1;
 
-            button.disabled = true;
-            button.textContent = 'Adding...';
+                if (addBtn.disabled) return;
+                addBtn.disabled = true;
+                addBtn.style.opacity = '0.5';
 
-            await Cart.addItem(productId, quantity);
+                await Cart.addItem(productId, quantity);
 
-            button.disabled = false;
-            button.textContent = 'Add to Cart';
-        });
+                addBtn.disabled = false;
+                addBtn.style.opacity = '1';
+                return;
+            }
+
+            // Buy Now Logic
+            const buyBtn = e.target.closest('.buy-now-btn');
+            if (buyBtn) {
+                e.preventDefault();
+                const productId = buyBtn.dataset.productId;
+                const quantity = parseInt(buyBtn.dataset.quantity) || 1;
+
+                if (buyBtn.disabled) return;
+                buyBtn.disabled = true;
+                buyBtn.style.opacity = '0.5';
+
+                await Cart.buyNow(productId, quantity);
+
+                // Wait a bit before enabling to prevent multiple clicks
+                setTimeout(() => {
+                    if (buyBtn) {
+                        buyBtn.disabled = false;
+                        buyBtn.style.opacity = '1';
+                    }
+                }, 1000);
+                return;
+            }
+        } catch (err) {
+            console.error('[Cart] Delegation error:', err);
+        }
     });
 }
 
@@ -261,7 +335,7 @@ function applyFilters() {
 // ============================================
 document.addEventListener('DOMContentLoaded', function () {
     initQuantityControls();
-    initAddToCartButtons();
+    initButtonDelegation();
     initFilters();
 
     // Form validation on submit

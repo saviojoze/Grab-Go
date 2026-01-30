@@ -100,7 +100,7 @@ require_once 'sidebar.php';
                     <p class="profile-email"><?php echo htmlspecialchars($user['email']); ?></p>
                     
                     <div class="profile-badge">
-                        <span class="status-badge status-ready">
+                        <span class="status-purple">
                             <?php echo ucfirst($user['role']); ?>
                         </span>
                     </div>
@@ -168,7 +168,7 @@ require_once 'sidebar.php';
 <style>
 /* Page Specific Styles */
 .profile-grid {
-    grid-template-columns: 320px 1fr !important;
+    grid-template-columns: 350px 1fr !important; /* Slightly wider left column */
     gap: 32px;
     align-items: start;
 }
@@ -178,6 +178,11 @@ require_once 'sidebar.php';
     width: 140px;
     height: 140px;
     margin: 0 auto 24px;
+    cursor: pointer; /* Hint interaction */
+}
+
+.profile-avatar-wrapper:hover .upload-btn {
+    transform: scale(1.1) rotate(15deg); /* Playful interaction */
 }
 
 .profile-avatar-wrapper img, 
@@ -188,6 +193,12 @@ require_once 'sidebar.php';
     object-fit: cover;
     border: 4px solid #FFF;
     box-shadow: 0 10px 25px rgba(67, 24, 255, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.profile-avatar-wrapper:hover img,
+.profile-avatar-wrapper:hover .avatar-placeholder {
+    transform: scale(1.02);
 }
 
 .avatar-placeholder {
@@ -204,6 +215,7 @@ require_once 'sidebar.php';
     position: absolute;
     bottom: 0;
     right: 0;
+    z-index: 2;
 }
 
 .upload-btn {
@@ -218,12 +230,7 @@ require_once 'sidebar.php';
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(67, 24, 255, 0.4);
     border: 3px solid #FFF;
-    transition: all 0.2s ease;
-}
-
-.upload-btn:hover {
-    transform: scale(1.1);
-    background: #2B3674;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy transition */
 }
 
 .profile-name {
@@ -231,13 +238,40 @@ require_once 'sidebar.php';
     font-weight: 800;
     color: #1B2559;
     margin-bottom: 4px;
+    letter-spacing: -0.02em;
 }
 
 .profile-email {
     color: #A3AED0;
     font-size: 0.95rem;
     font-weight: 500;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+/* Custom Purple Badge */
+.status-purple {
+    background: #F2F1FF; /* Very light purple */
+    color: #4318FF;
+    border: 1px solid #4318FF;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 10px rgba(67, 24, 255, 0.1);
+}
+
+.status-purple::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
 }
 
 .form-grid {
@@ -255,6 +289,14 @@ require_once 'sidebar.php';
     border-top: 1px solid rgba(163, 174, 208, 0.1);
 }
 
+/* Form Input Enhancements */
+.form-input:disabled {
+    background-color: #F4F7FE;
+    border-color: transparent;
+    color: #A3AED0;
+    font-weight: 500;
+}
+
 @media (max-width: 992px) {
     .profile-grid {
         grid-template-columns: 1fr !important;
@@ -265,5 +307,24 @@ require_once 'sidebar.php';
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const detailsForm = document.querySelector('form:not(#dpForm)');
+    if (detailsForm) {
+        detailsForm.addEventListener('submit', function() {
+            const btn = this.querySelector('button[type="submit"]');
+            if (btn) {
+                const originalText = btn.innerText;
+                btn.style.width = btn.offsetWidth + 'px'; // Prevent resize
+                btn.innerText = 'Saving...';
+                btn.style.opacity = '0.8';
+                btn.style.cursor = 'wait';
+                // We don't disable immediately to allow form submission to pass through
+            }
+        });
+    }
+});
+</script>
 
 <?php require_once 'footer.php'; ?>

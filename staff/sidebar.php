@@ -27,6 +27,14 @@
             <span>Order Management</span>
         </a>
 
+        <a href="verify-customer.php" class="sidebar-item <?php echo ($current_page === 'verification') ? 'active' : ''; ?>">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <path d="m9 12 2 2 4-4"></path>
+            </svg>
+            <span>Customer Verification</span>
+        </a>
+
         <a href="profile.php" class="sidebar-item <?php echo ($current_page === 'profile') ? 'active' : ''; ?>">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>

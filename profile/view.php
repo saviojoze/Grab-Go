@@ -69,6 +69,17 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
+// Ensure customer has a verification PIN
+if ($user && $user['role'] === 'customer' && empty($user['verification_pin'])) {
+    $verification_pin = sprintf("%06d", mt_rand(100000, 999999));
+    $user['verification_pin'] = $verification_pin;
+    
+    // Save to DB
+    $stmt_pin = $conn->prepare("UPDATE users SET verification_pin = ? WHERE id = ?");
+    $stmt_pin->bind_param("si", $verification_pin, $user_id);
+    $stmt_pin->execute();
+}
+
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
@@ -109,6 +120,8 @@ require_once __DIR__ . '/../includes/header.php';
                 <div class="flex justify-center gap-sm">
                     <span class="badge" style="background: #e3f2fd; color: #1565c0; font-weight: 600; font-size: 0.75rem;">CUSTOMER</span>
                 </div>
+
+
             </div>
             <div class="border-t p-lg">
                 <a href="../orders/my-orders.php" class="sidebar-item" style="border-radius: var(--radius-md);">
@@ -172,5 +185,38 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 </div>
+
+
+<script>
+async function regeneratePin() {
+    const icon = document.querySelector('.refresh-icon');
+    icon.style.transition = 'transform 0.5s';
+    icon.style.transform = 'rotate(180deg)';
+    
+    try {
+        const response = await fetch('regenerate_pin.php?t=' + new Date().getTime(), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.querySelector('#pinDisplay').textContent = data.pin;
+            // Reset rotation
+            setTimeout(() => {
+                icon.style.transform = 'rotate(0deg)';
+            }, 500);
+        } else {
+            alert('Failed to regenerate PIN');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred');
+    }
+}
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

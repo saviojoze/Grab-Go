@@ -204,36 +204,56 @@ require_once __DIR__ . '/../includes/header.php';
                                 <?php endif; ?>
                             </div>
                             
-                            <div class="card-image">
-                                <?php 
-                                $imgUrl = $product['image_url'] ?? 'images/placeholder.jpg';
-                                if (strpos($imgUrl, 'http') === 0) {
-                                    $displayImg = $imgUrl;
-                                } else {
-                                    // Use BASE_URL if defined, otherwise relative
-                                    $base = defined('BASE_URL') ? BASE_URL : '../';
-                                    $displayImg = $base . $imgUrl;
-                                }
-                                ?>
-                                <img src="<?php echo htmlspecialchars($displayImg); ?>" 
-                                     alt="<?php echo htmlspecialchars($product['name']); ?>"
-                                     onerror="this.onerror=null; this.src='<?php echo defined('BASE_URL') ? BASE_URL : '../'; ?>images/placeholder.jpg'">
+                            <div class="card-image" style="position: relative;">
+                                <a href="details.php?id=<?php echo $product['id']; ?>" style="display: block; width: 100%; height: 100%;">
+                                    <?php 
+                                    $imgUrl = $product['image_url'] ?? 'images/placeholder.jpg';
+                                    if (strpos($imgUrl, 'http') === 0) {
+                                        $displayImg = $imgUrl;
+                                    } else {
+                                        $base = defined('BASE_URL') ? BASE_URL : '../';
+                                        $displayImg = $base . $imgUrl;
+                                    }
+                                    ?>
+                                    <img src="<?php echo htmlspecialchars($displayImg); ?>" 
+                                         alt="<?php echo htmlspecialchars($product['name']); ?>"
+                                         style="object-fit: contain;"
+                                         onerror="this.onerror=null; this.src='<?php echo defined('BASE_URL') ? BASE_URL : '../'; ?>images/placeholder.jpg'">
+                                </a>
                             </div>
 
                             <div class="card-body">
-                                <h3 class="product-title"><?php echo htmlspecialchars($product['name']); ?></h3>
-                                <div class="rating">
-                                    <span class="stars">★★★★★</span>
-                                    <span class="reviews">(<?php echo rand(10, 150); ?> Reviews)</span>
-                                </div>
-                                <div class="price">₹<?php echo number_format($product['price'], 2); ?></div>
+                                <a href="details.php?id=<?php echo $product['id']; ?>" style="text-decoration: none; color: inherit; display: block;">
+                                    <h3 class="product-title" style="font-size: 14px; font-weight: 500; color: #212121; margin-bottom: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"><?php echo htmlspecialchars($product['name']); ?></h3>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                        <div class="rating" style="background: #388E3C; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">
+                                            4.4 <span style="font-size: 10px;">★</span>
+                                        </div>
+                                        <span style="color: #878787; font-size: 13px;">(<?php echo rand(50, 500); ?>)</span>
+                                    </div>
+
+                                    <div class="price-row" style="display: flex; align-items: baseline; gap: 8px;">
+                                        <div class="price" style="font-size: 16px; font-weight: 600; color: #212121;">₹<?php echo number_format($product['price'], 0); ?></div>
+                                        <?php if ($product['original_price'] > $product['price']): ?>
+                                            <span style="font-size: 13px; color: #878787; text-decoration: line-through;">₹<?php echo number_format($product['original_price'], 0); ?></span>
+                                            <span style="font-size: 13px; color: #388E3C; font-weight: 700;"><?php echo round((($product['original_price'] - $product['price']) / $product['original_price']) * 100); ?>% off</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    
+                                    <?php if ($product['stock'] < 5): ?>
+                                         <div style="font-size: 12px; color: #ff6161; margin-top: 4px;">Only <?php echo $product['stock']; ?> left!</div>
+                                    <?php else: ?>
+                                         <div style="font-size: 12px; color: #26a541; margin-top: 4px; font-weight: 500;">Free delivery</div>
+                                    <?php endif; ?>
+                                </a>
                             </div>
 
                             <div class="card-footer">
                                 <button class="btn-shop btn-ghost add-to-cart-btn" data-product-id="<?php echo $product['id']; ?>">
                                     Add to Cart
                                 </button>
-                                <button class="btn-shop btn-dark">
+                                <button class="btn-shop btn-dark buy-now-btn" data-product-id="<?php echo $product['id']; ?>">
                                     Buy Now
                                 </button>
                             </div>

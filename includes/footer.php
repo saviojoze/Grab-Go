@@ -55,7 +55,7 @@
         </div>
     </footer>
     
-    <script src="<?php echo BASE_URL; ?>js/main.js"></script>
+    <script src="<?php echo BASE_URL; ?>js/main.js?v=<?php echo time(); ?>"></script>
     <?php if (isset($extra_js)): ?>
         <script src="<?php echo BASE_URL . $extra_js; ?>"></script>
     <?php endif; ?>

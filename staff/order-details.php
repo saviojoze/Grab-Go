@@ -16,6 +16,22 @@ if ($order_id <= 0) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
     $new_status = sanitize_input($_POST['status']);
     
+    // Verify PIN if completing order
+    if ($new_status === 'completed') {
+        $entered_pin = sanitize_input($_POST['verification_pin'] ?? '');
+        
+        // Fetch the unique Delivery OTP for this specific order
+        $stmt_pin = $conn->prepare("SELECT delivery_otp FROM orders WHERE id = ?");
+        $stmt_pin->bind_param("i", $order_id);
+        $stmt_pin->execute();
+        $real_pin = $stmt_pin->get_result()->fetch_assoc()['delivery_otp'] ?? '';
+        
+        if ($entered_pin !== $real_pin) {
+            $_SESSION['error'] = 'Invalid Delivery OTP!';
+            redirect("order-details.php?id=$order_id");
+        }
+    }
+
     $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
     $stmt->bind_param("si", $new_status, $order_id);
     
@@ -170,6 +186,16 @@ require_once 'sidebar.php';
                         <div class="info-group">
                             <label>Payment Method</label>
                             <p class="text-capitalize"><?php echo htmlspecialchars($order['payment_method']); ?></p>
+                            <?php if($order['payment_method'] === 'online'): ?>
+                                <div style="margin-top: 5px;">
+                                    <span class="badge <?php echo ($order['payment_status'] === 'paid' ? 'badge-success' : 'badge-warning'); ?>">
+                                        <?php echo ucfirst($order['payment_status']); ?>
+                                    </span>
+                                    <?php if($order['transaction_id']): ?>
+                                        <p class="text-xs text-secondary mt-1">Ref: <?php echo htmlspecialchars($order['transaction_id']); ?></p>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -215,23 +241,27 @@ require_once 'sidebar.php';
                     <p style="color: #A3AED0;">Customer: <span style="color: #2B3674; font-weight: 600;"><?php echo htmlspecialchars($order['full_name']); ?></span></p>
                 </div>
 
-                <div class="verification-steps">
-                    <div class="verification-heading">Required Checks</div>
-                    
-                    <label class="verification-item">
-                        <input type="checkbox" required>
-                        <span>Customer Identity Verified (ID/SMS)</span>
-                    </label>
-                    
-                    <label class="verification-item">
-                        <input type="checkbox" required>
-                        <span>Payment Status Confirmed</span>
-                    </label>
+                <div class="verification-steps" style="text-align: center;">
+                    <div style="margin-bottom: 20px;">
+                        <img src="../assets/icons/shield-check.svg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1161/1161388.png'" style="width: 64px; opacity: 0.8; margin-bottom: 15px;">
+                        <h4 style="margin: 0; color: #2d3748;">Secure Handoff</h4>
+                        <p style="font-size: 0.9rem; color: #718096; margin-top: 5px;">Enter the 6-digit PIN provided by the customer to complete this order.</p>
+                    </div>
 
-                    <label class="verification-item">
-                        <input type="checkbox" required>
-                        <span>All Items Handed Over to Customer</span>
-                    </label>
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 12px; border: 1px dashed #cbd5e0;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #4a5568; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px;">Enter Delivery OTP</label>
+                        
+                        <div class="otp-container" style="display: flex; gap: 8px; justify-content: center;">
+                            <?php for($i=0; $i<6; $i++): ?>
+                            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric"
+                                   oninput="handleOtpInput(this, <?php echo $i; ?>)" 
+                                   onkeydown="handleOtpKey(this, event, <?php echo $i; ?>)"
+                                   onpaste="handleOtpPaste(event)"
+                                   style="width: 45px; height: 55px; font-size: 1.5rem; text-align: center; border: 2px solid #e2e8f0; border-radius: 8px; font-weight: 700; color: #2d3748; outline: none; transition: all 0.2s;">
+                            <?php endfor; ?>
+                        </div>
+                        <input type="hidden" name="verification_pin" id="final_pin" required>
+                    </div>
                 </div>
             </div>
             
@@ -254,16 +284,75 @@ function handleStatusUpdate(e) {
     return true; // Allow other statuses to proceed
 }
 
+
+// OTP Handling Logic
+function handleOtpInput(input, index) {
+    const value = input.value;
+    
+    // Only allow numbers
+    if (!/^\d*$/.test(value)) {
+        input.value = "";
+        return;
+    }
+
+    if (value.length === 1) {
+        // Move to next input
+        const next = document.querySelectorAll('.otp-digit')[index + 1];
+        if (next) next.focus();
+    }
+    updateHiddenPin();
+}
+
+function handleOtpKey(input, e, index) {
+    if (e.key === 'Backspace' && !input.value) {
+        // Move to previous if backspacing empty
+        const prev = document.querySelectorAll('.otp-digit')[index - 1];
+        if (prev) {
+            prev.focus();
+        }
+    }
+}
+
+function handleOtpPaste(e) {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+    const digits = pasted.replace(/\D/g, '').split('').slice(0, 6);
+    
+    const inputs = document.querySelectorAll('.otp-digit');
+    digits.forEach((digit, i) => {
+        if (inputs[i]) inputs[i].value = digit;
+    });
+    
+    if (digits.length > 0) {
+        // Focus the input after the last pasted digit
+        const nextIndex = Math.min(digits.length, 5);
+        inputs[nextIndex].focus();
+    }
+    updateHiddenPin();
+}
+
+function updateHiddenPin() {
+    const inputs = document.querySelectorAll('.otp-digit');
+    let pin = '';
+    inputs.forEach(input => pin += input.value);
+    document.getElementById('final_pin').value = pin;
+}
+
 function openCollectionModal() {
-    // Reset checkboxes
-    const checkboxes = document.querySelectorAll('#collectionModal input[type="checkbox"]');
-    checkboxes.forEach(cb => cb.checked = false);
+    // Reset OTP inputs
+    const inputs = document.querySelectorAll('.otp-digit');
+    inputs.forEach(input => input.value = '');
+    document.getElementById('final_pin').value = '';
+    
     document.getElementById('collectionModal').classList.add('show');
+    // Auto focus first input
+    setTimeout(() => {
+        if(inputs[0]) inputs[0].focus();
+    }, 100);
 }
 
 function closeCollectionModal() {
     document.getElementById('collectionModal').classList.remove('show');
-    // Optional: Reset select to previous value if cancelled
 }
 
 // Close on outside click

@@ -40,9 +40,25 @@ require_once __DIR__ . '/../includes/header.php';
                             case 'cancelled': $status_class = 'badge-danger'; break;
                         }
                         ?>
-                        <span class="badge <?php echo $status_class; ?>">
                             <?php echo ucfirst($order['status']); ?>
                         </span>
+                        
+                        <?php if($order['payment_method'] === 'online'): ?>
+                            <?php 
+                            $pay_class = 'badge-neutral';
+                            if($order['payment_status'] === 'paid') $pay_class = 'badge-success';
+                            if($order['payment_status'] === 'failed') $pay_class = 'badge-danger';
+                            if($order['payment_status'] === 'pending') $pay_class = 'badge-warning';
+                            ?>
+                            <div style="margin-top: 5px; text-align: right;">
+                                <span class="badge <?php echo $pay_class; ?>" style="font-size: 0.7rem;">
+                                    <?php echo ucfirst($order['payment_status']); ?>
+                                </span>
+                                <?php if($order['payment_status'] === 'pending'): ?>
+                                    <a href="../checkout/pay-online.php?order=<?php echo $order['order_number']; ?>" style="display: block; font-size: 0.75rem; color: #1565c0; margin-top: 2px;">Pay Now</a>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
@@ -59,6 +75,17 @@ require_once __DIR__ . '/../includes/header.php';
                             <div class="font-semibold text-green">₹<?php echo number_format($order['total'], 2); ?></div>
                         </div>
                     </div>
+                    
+                    <?php if (in_array($order['status'], ['pending', 'ready'])): ?>
+                    <div style="background: #f0f9ff; border: 1px dashed #0c4a6e; border-radius: 8px; padding: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #0369a1; letter-spacing: 0.5px;">Delivery OTP</span>
+                        </div>
+                        <div style="font-family: monospace; font-size: 1.5rem; font-weight: 700; color: #0284c7; letter-spacing: 4px;">
+                            <?php echo $order['delivery_otp'] ? htmlspecialchars($order['delivery_otp']) : '------'; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                     
                     <a href="confirmation.php?order=<?php echo $order['order_number']; ?>" class="btn btn-secondary btn-sm">
                         View Details

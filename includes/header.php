@@ -33,6 +33,9 @@ if (is_logged_in()) {
     <?php if (isset($extra_css)): ?>
         <link rel="stylesheet" href="<?php echo BASE_URL . $extra_css; ?>?v=<?php echo time(); ?>">
     <?php endif; ?>
+    <script>
+        window.GRAB_AND_GO_BASE_URL = '<?php echo BASE_URL; ?>';
+    </script>
 </head>
 <body>
     <header class="header">

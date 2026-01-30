@@ -23,7 +23,7 @@
     <!-- Staff Header -->
     <header class="admin-header">
         <div class="admin-header-left">
-            <button class="sidebar-toggle" id="sidebarToggle">
+            <button type="button" class="sidebar-toggle" id="sidebarToggle">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="3" y1="12" x2="21" y2="12"></line>
                     <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -43,7 +43,7 @@
         <div class="admin-header-right">
             <!-- User Profile -->
             <div class="user-profile-dropdown">
-                <button class="user-profile-btn" id="userProfileBtn">
+                <button type="button" class="user-profile-btn" id="userProfileBtn">
                     <div class="user-avatar">
                         <?php echo strtoupper(substr($_SESSION['full_name'] ?? 'S', 0, 1)); ?>
                     </div>

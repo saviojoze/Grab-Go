@@ -30,10 +30,18 @@ if ($order_result->num_rows === 0) {
 $order = $order_result->fetch_assoc();
 
 // Get order items
-$stmt = $conn->prepare("SELECT * FROM order_items WHERE order_id = ?");
+// Get order items with product details
+$stmt = $conn->prepare("
+    SELECT oi.*, p.image_url, p.unit, p.description 
+    FROM order_items oi 
+    JOIN products p ON oi.product_id = p.id 
+    WHERE oi.order_id = ?
+");
 $stmt->bind_param("i", $order['id']);
 $stmt->execute();
 $items_result = $stmt->get_result();
+
+$delivery_otp = $order['delivery_otp'] ?? '------';
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -47,22 +55,53 @@ require_once __DIR__ . '/../includes/header.php';
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
             </div>
-            <h1>Order Confirmed!</h1>
-            <p>Thank you for choosing our service! Your order <span class="order-number">#<?php echo htmlspecialchars($order_number); ?></span><br>
-            will be <strong>READY</strong> for your next visit immediately.</p>
         </div>
         
         <div class="confirmation-content">
+                <h1>Order Confirmed!</h1>
+                <p class="text-secondary">Thank you for your order. We have received it.</p>
+                
+                <?php if($order['payment_method'] === 'online'): ?>
+                    <div style="margin-top: 15px;">
+                        <?php if($order['payment_status'] === 'paid'): ?>
+                            <span class="badge badge-success">Payment Successful</span>
+                        <?php elseif($order['payment_status'] === 'failed'): ?>
+                            <span class="badge badge-danger">Payment Failed</span>
+                        <?php else: ?>
+                            <span class="badge badge-warning">Payment Pending</span>
+                            <div style="margin-top: 10px;">
+                                <a href="../checkout/pay-online.php?order=<?php echo $order_number; ?>" class="btn btn-primary btn-sm">Complete Payment</a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
             <!-- Pickup Information -->
             <div class="pickup-info">
                 <h2>Pickup Time</h2>
                 
-                <!-- QR Code -->
-                <div class="qr-code-section">
-                    <div class="qr-code">
-                        <div class="qr-code-placeholder"></div>
+                <!-- QR Code & PIN -->
+                <div class="qr-code-section" style="text-align: center;">
+                    <div class="qr-code" style="margin-bottom: 5px;">
+                        <?php 
+                            $qr_data = json_encode([
+                                'order_id' => $order_number,
+                                'otp' => $delivery_otp,
+                                'user' => $_SESSION['full_name'] ?? 'Customer'
+                            ]);
+                            $qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" . urlencode($qr_data);
+                        ?>
+                        <img src="<?php echo $qr_url; ?>" alt="Order QR" style="border-radius: var(--radius-md); border: 4px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
                     </div>
-                    <p class="text-sm text-secondary">Scan this QR code at pickup</p>
+                    
+                    <div class="verification-pin-box" style="background: #e3f2fd; border: 2px dashed #1565c0; padding: 10px; border-radius: 8px; margin: 15px auto; max-width: 200px;">
+                        <p class="text-xs text-secondary" style="margin-bottom: 4px; font-weight: 600; text-transform: uppercase;">Delivery OTP</p>
+                        <div style="font-size: 24px; font-weight: 800; letter-spacing: 5px; color: #1565c0; line-height: 1;">
+                            <?php echo htmlspecialchars($delivery_otp); ?>
+                        </div>
+                    </div>
+                    
+                    <p class="text-sm text-secondary">Present this QR code or PIN at pickup</p>
                 </div>
                 
                 <!-- Date & Time -->
@@ -108,15 +147,51 @@ require_once __DIR__ . '/../includes/header.php';
                 <h2>Order Summary</h2>
                 
                 <!-- Items -->
-                <?php while ($item = $items_result->fetch_assoc()): ?>
-                    <div class="summary-item">
-                        <div class="summary-item-details">
-                            <div class="summary-item-name"><?php echo htmlspecialchars($item['product_name']); ?></div>
-                            <div class="summary-item-quantity">Qty: <?php echo $item['quantity']; ?></div>
+                <!-- Items -->
+                <div class="product-cards-container" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
+                    <?php while ($item = $items_result->fetch_assoc()): 
+                        $imgUrl = $item['image_url'] ?? 'images/placeholder.jpg';
+                        if (strpos($imgUrl, 'http') !== 0) {
+                            $imgUrl = BASE_URL . $imgUrl;
+                        }
+                    ?>
+                        <div class="product-card" style="display: flex; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 12px; gap: 16px; align-items: start;">
+                            <!-- Image -->
+                            <div style="width: 80px; height: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid #f0f0f0; border-radius: 4px;">
+                                <img src="<?php echo htmlspecialchars($imgUrl); ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                            </div>
+                            
+                            <!-- Middle Content -->
+                            <div style="flex: 1; padding-top: 4px;">
+                                <h3 style="margin: 0 0 4px 0; font-size: 15px; color: #212121; font-weight: 500; line-height: 1.3;">
+                                    <?php echo htmlspecialchars($item['product_name']); ?>
+                                </h3>
+                                <div style="font-size: 12px; color: #878787; margin-bottom: 6px; line-height: 1.4;">
+                                    <?php 
+                                        $desc = strip_tags($item['description']);
+                                        if (strlen($desc) > 80) $desc = substr($desc, 0, 80) . '...';
+                                        echo htmlspecialchars($desc);
+                                    ?>
+                                </div>
+                                <div style="font-size: 13px; color: #212121;">
+                                    Qty: <b><?php echo $item['quantity']; ?></b>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Content: Price & Button -->
+                            <div style="text-align: right; min-width: 100px; padding-top: 4px;">
+                                <div style="font-size: 18px; font-weight: 600; color: #212121; margin-bottom: 8px;">
+                                    ₹<?php echo number_format($item['price'] * $item['quantity'], 2); ?>
+                                </div>
+                                
+                                <a href="../products/details.php?id=<?php echo $item['product_id']; ?>" 
+                                   style="display: inline-block; background: #2874f0; color: white; padding: 8px 16px; text-decoration: none; font-size: 12px; font-weight: 600; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                                    View Details
+                                </a>
+                            </div>
                         </div>
-                        <div class="summary-item-price">₹<?php echo number_format($item['price'] * $item['quantity'], 2); ?></div>
-                    </div>
-                <?php endwhile; ?>
+                    <?php endwhile; ?>
+                </div>
                 
                 <!-- Totals -->
                 <div class="summary-totals">

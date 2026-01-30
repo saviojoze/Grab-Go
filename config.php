@@ -48,12 +48,21 @@ define('FIREBASE_STORAGE_BUCKET', getenv('FIREBASE_STORAGE_BUCKET'));
 define('FIREBASE_MESSAGING_SENDER_ID', getenv('FIREBASE_MESSAGING_SENDER_ID'));
 define('FIREBASE_APP_ID', getenv('FIREBASE_APP_ID'));
 
+// Razorpay Configuration
+define('RAZORPAY_KEY_ID', getenv('RAZORPAY_KEY_ID'));
+define('RAZORPAY_KEY_SECRET', getenv('RAZORPAY_KEY_SECRET'));
+
 
 
 // Create database connection
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+try {
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+} catch (Exception $e) {
+    // Check for specific error codes if needed, but for now catch all
+    die("Connection failed: " . $e->getMessage() . " (Suggestion: Check if your MySQL server is running in XAMPP)");
+}
 
-// Check connection
+// Check connection (keep this for fallback if exceptions aren't thrown)
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }

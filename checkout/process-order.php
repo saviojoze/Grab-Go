@@ -55,9 +55,30 @@ $order_number = 'ORD-' . strtoupper(substr(md5(uniqid()), 0, 8));
 $conn->begin_transaction();
 
 try {
+    // Generate unique OTP for this order
+    $delivery_otp = sprintf("%06d", mt_rand(100000, 999999));
+    
+    // Payment Status Logic
+    $payment_status = 'pending';
+    $razorpay_order_id = null;
+    
+    // If paying online, generate Razorpay Order ID
+    if ($payment_method === 'online') {
+        require_once __DIR__ . '/../includes/RazorpayHelper.php';
+        $razorpay = new RazorpayHelper();
+        
+        $rzp_order = $razorpay->createOrder($total, $order_number);
+        
+        if ($rzp_order && isset($rzp_order['id'])) {
+            $razorpay_order_id = $rzp_order['id'];
+        } else {
+            throw new Exception("Failed to create Razorpay order");
+        }
+    }
+
     // Insert order
-    $stmt = $conn->prepare("INSERT INTO orders (order_number, user_id, pickup_date, pickup_time, contact_name, contact_email, contact_phone, payment_method, subtotal, discount, delivery_fee, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sissssssdddd", $order_number, $user_id, $pickup_date, $pickup_time, $contact_name, $contact_email, $contact_phone, $payment_method, $subtotal, $discount, $delivery, $total);
+    $stmt = $conn->prepare("INSERT INTO orders (order_number, user_id, pickup_date, pickup_time, contact_name, contact_email, contact_phone, payment_method, subtotal, discount, delivery_fee, total, delivery_otp, payment_status, razorpay_order_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sissssssddddsss", $order_number, $user_id, $pickup_date, $pickup_time, $contact_name, $contact_email, $contact_phone, $payment_method, $subtotal, $discount, $delivery, $total, $delivery_otp, $payment_status, $razorpay_order_id);
     $stmt->execute();
     
     $order_id = $conn->insert_id;
@@ -78,8 +99,12 @@ try {
     // Commit transaction
     $conn->commit();
     
-    // Redirect to confirmation page
-    redirect('../orders/confirmation.php?order=' . $order_number);
+    // Redirect based on payment method
+    if ($payment_method === 'online') {
+        redirect('pay-online.php?order=' . $order_number);
+    } else {
+        redirect('../orders/confirmation.php?order=' . $order_number);
+    }
     
 } catch (Exception $e) {
     // Rollback on error

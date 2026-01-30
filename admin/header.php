@@ -33,7 +33,7 @@
     <!-- Admin Header -->
     <header class="admin-header">
         <div class="admin-header-left">
-            <button class="sidebar-toggle" id="sidebarToggle">
+            <button type="button" class="sidebar-toggle" id="sidebarToggle">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="3" y1="12" x2="21" y2="12"></line>
                     <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -52,7 +52,7 @@
         
         <div class="admin-header-right">
             <!-- Notifications -->
-            <button class="icon-btn" title="Notifications">
+            <button type="button" class="icon-btn" title="Notifications">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -62,7 +62,7 @@
             
             <!-- User Profile -->
             <div class="user-profile-dropdown">
-                <button class="user-profile-btn" id="userProfileBtn">
+                <button type="button" class="user-profile-btn" id="userProfileBtn">
                     <div class="user-avatar">
                         <?php echo strtoupper(substr($_SESSION['full_name'] ?? 'A', 0, 1)); ?>
                     </div>

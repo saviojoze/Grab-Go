@@ -39,6 +39,15 @@ if ($result->num_rows > 0) {
         ]);
         exit;
     }
+
+    // Generate Verification PIN if customer
+    $verification_pin = '';
+    if ($user['role'] === 'customer') {
+        $verification_pin = sprintf("%06d", mt_rand(100000, 999999));
+        $stmt_pin = $conn->prepare("UPDATE users SET verification_pin = ? WHERE id = ?");
+        $stmt_pin->bind_param("si", $verification_pin, $user['id']);
+        $stmt_pin->execute();
+    }
     
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['full_name'] = $user['full_name'];
@@ -69,6 +78,12 @@ if ($result->num_rows > 0) {
     
     if ($stmt->execute()) {
         $user_id = $conn->insert_id;
+        
+        // Generate Verification PIN
+        $verification_pin = sprintf("%06d", mt_rand(100000, 999999));
+        $stmt_pin = $conn->prepare("UPDATE users SET verification_pin = ? WHERE id = ?");
+        $stmt_pin->bind_param("si", $verification_pin, $user_id);
+        $stmt_pin->execute();
         
         // Log them in
         $_SESSION['user_id'] = $user_id;

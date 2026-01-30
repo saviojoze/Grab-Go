@@ -1398,6 +1398,7 @@
     font-size: 0.75rem;
     font-weight: 700;
 }
+
 /* ============================================
    PREMIUM OVERRIDES & FILTER TABS (from admin-premium.css)
    ============================================ */
@@ -1480,3 +1481,23 @@
     color: #A3AED0;
 }
 
+/* History Log Button Style */
+.btn-ghost {
+    background: transparent;
+    color: var(--color-primary);
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-ghost:hover {
+    background: rgba(67, 24, 255, 0.1);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+}

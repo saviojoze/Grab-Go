@@ -18,18 +18,73 @@ $theme_class = 'theme-' . $role;
     <style>
         /* Shared variables */
         :root {
-            --theme-primary: #2874f0; /* Default Flipkart Blue */
+            --theme-primary: #1877F2; /* Vibrant Blue */
+            --theme-green: #00D563;   /* Vibrant Green */
         }
         
-        .theme-admin { --theme-primary: #1a73e8; } /* Admin Blue */
-        .theme-staff { --theme-primary: #00d563; } /* Staff Green */
-        .theme-customer { --theme-primary: #2874f0; } /* Flipkart Blue */
+        .theme-admin { --theme-primary: #1a73e8; }
+        .theme-staff { --theme-primary: #00d563; }
+        .theme-customer { --theme-primary: #1877F2; }
 
         /* Apply theme overrides */
-        .auth-hero { background: var(--theme-primary) !important; }
-        .btn-primary { background: var(--theme-primary) !important; border-color: var(--theme-primary) !important; }
-        .form-input:focus { border-color: var(--theme-primary) !important; box-shadow: 0 0 0 3px rgba(var(--theme-primary), 0.1); }
-        .forgot-password { color: var(--theme-primary); }
+        .auth-hero { 
+            background: var(--theme-primary) !important; 
+            padding: 60px !important;
+        }
+        
+        .auth-hero-content {
+            text-align: left;
+            max-width: 480px;
+        }
+
+        .auth-hero-badge {
+            background-color: var(--theme-green) !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            border-radius: 50px;
+            padding: 6px 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.75rem;
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+
+        .auth-hero h1 {
+            font-size: 3.5rem !important;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        
+        .auth-hero p {
+            font-size: 1.1rem !important;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            max-width: 400px;
+        }
+
+        .btn-primary { 
+            background: var(--theme-primary) !important; 
+            border-color: var(--theme-primary) !important;
+            font-weight: 600;
+        }
+        
+        .form-input:focus { 
+            border-color: var(--theme-primary) !important; 
+            box-shadow: 0 0 0 4px rgba(24, 119, 242, 0.15) !important; 
+        }
+        
+        .forgot-password { 
+            color: var(--theme-primary); 
+            font-weight: 500;
+        }
+        
+        .auth-footer a { 
+            color: var(--theme-green) !important; 
+            font-weight: 700;
+        }
     </style>
     
     <!-- Firebase SDK -->
@@ -45,8 +100,8 @@ $theme_class = 'theme-' . $role;
                 <h1>Skip the Line.<br>Save Your Time.</h1>
                 <p>Order online, skip the checkout lines, and manage pre-orders and purchase pickups seamlessly.</p>
                 
-                <div class="auth-hero-image">
-                    <img src="../images/grocery-bag.jpg" alt="Grocery Shopping" onerror="this.style.display='none'">
+                <div class="auth-hero-image" style="display: none;">
+                    <img src="../images/grocery-bag.jpg" alt="Grocery Shopping">
                 </div>
             </div>
         </div>
@@ -121,7 +176,20 @@ $theme_class = 'theme-' . $role;
                 </div>
                 
                 <!-- Google Sign-In -->
-                <button id="googleLoginBtn" onclick="loginWithGoogle()" class="btn btn-secondary btn-block btn-lg" style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                <?php
+                // Generate Google Login URL
+                $google_params = [
+                    'client_id' => GOOGLE_CLIENT_ID,
+                    'redirect_uri' => GOOGLE_REDIRECT_URI,
+                    'response_type' => 'code',
+                    'scope' => 'email profile',
+                    'access_type' => 'online',
+                    'prompt' => 'select_account'
+                ];
+                $google_login_url = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($google_params);
+                ?>
+                <!-- Google Sign-In -->
+                <a href="<?php echo htmlspecialchars($google_login_url); ?>" class="btn btn-secondary btn-block btn-lg" style="display: flex; align-items: center; justify-content: center; gap: 12px; text-decoration: none;">
                     <svg width="20" height="20" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -129,7 +197,7 @@ $theme_class = 'theme-' . $role;
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                     </svg>
                     Continue with Google
-                </button>
+                </a>
                 
                 <!-- Footer -->
                 <div class="auth-footer">
