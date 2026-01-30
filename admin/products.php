@@ -160,8 +160,8 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY name");
                                     $stock_class = $stock == 0 ? 'stock-out' : ($stock < 10 ? 'stock-low' : 'stock-good');
                                     ?>
                                     <span class="stock-badge <?php echo $stock_class; ?>">
-                                        <?php echo $stock; ?> units
-                                    </span>
+                                         <?php echo $stock; ?> <?php echo htmlspecialchars($product['unit'] ?? 'units'); ?>
+                                     </span>
                                 </td>
                                 <td>
                                     <?php if ($product['is_sale']): ?>

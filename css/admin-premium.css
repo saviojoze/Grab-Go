@@ -1,0 +1,540 @@
+/* ============================================
+   NEW MODEL DESIGN - PREMIUM AESTHETICS (FULL)
+   ============================================ */
+
+/* ... (Previous Styles Interact/Structure) ... */
+
+/* 1. Global Polish & Background */
+.admin-body {
+    background-color: #F4F7FE;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(67, 24, 255, 0.08) 0%, transparent 25%),
+        radial-gradient(circle at 90% 80%, rgba(5, 205, 153, 0.08) 0%, transparent 25%),
+        linear-gradient(135deg, #F4F7FE 0%, #EFF4FB 100%);
+    background-attachment: fixed;
+    font-family: 'DM Sans', 'Inter', -apple-system, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-fade-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in {
+    animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stagger-1 {
+    animation-delay: 0.1s;
+}
+
+.stagger-2 {
+    animation-delay: 0.2s;
+}
+
+.stagger-3 {
+    animation-delay: 0.3s;
+}
+
+.stagger-4 {
+    animation-delay: 0.4s;
+}
+
+/* 2. Modern Sidebar (Floating Pill Style) */
+.admin-sidebar {
+    background: #111c44 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-nav {
+    padding: 16px;
+    gap: 8px;
+}
+
+.sidebar-item {
+    border-radius: 12px !important;
+    margin-bottom: 4px;
+    padding: 12px 16px !important;
+    border: none !important;
+    color: #A3AED0 !important;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #FFF !important;
+    transform: translateX(4px);
+}
+
+.sidebar-item.active {
+    background: linear-gradient(90deg, #4318FF 0%, #764EFF 100%) !important;
+    box-shadow: 0 4px 16px rgba(67, 24, 255, 0.4);
+    color: #FFF !important;
+    font-weight: 600;
+    transform: translateX(0);
+}
+
+.sidebar-item svg {
+    color: inherit !important;
+}
+
+/* 3. Attractive Stat Cards (Floating + Glow) */
+.stat-card {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 1) !important;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.01),
+        0 2px 4px -1px rgba(0, 0, 0, 0.01),
+        0 10px 40px -10px rgba(112, 144, 176, 0.12);
+    border-radius: 20px !important;
+    padding: 20px !important;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: default;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card:nth-child(1):hover {
+    box-shadow: 0 20px 40px -5px rgba(67, 24, 255, 0.15);
+}
+
+.stat-card:nth-child(2):hover {
+    box-shadow: 0 20px 40px -5px rgba(255, 181, 71, 0.15);
+}
+
+.stat-card:nth-child(3):hover {
+    box-shadow: 0 20px 40px -5px rgba(123, 31, 162, 0.15);
+}
+
+.stat-card:nth-child(4):hover {
+    box-shadow: 0 20px 40px -5px rgba(5, 205, 153, 0.15);
+}
+
+/* Icons */
+.stat-icon {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 18px !important;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.stat-card:nth-child(1) .stat-icon {
+    background: linear-gradient(135deg, #E3F2FD 0%, #4318FF 100%);
+    color: white;
+    box-shadow: 0 8px 16px rgba(67, 24, 255, 0.2);
+}
+
+.stat-card:nth-child(2) .stat-icon {
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFB547 100%);
+    color: white;
+    box-shadow: 0 8px 16px rgba(255, 181, 71, 0.2);
+}
+
+.stat-card:nth-child(3) .stat-icon {
+    background: linear-gradient(135deg, #F3E5F5 0%, #7B1FA2 100%);
+    color: white;
+    box-shadow: 0 8px 16px rgba(123, 31, 162, 0.2);
+}
+
+.stat-card:nth-child(4) .stat-icon {
+    background: linear-gradient(135deg, #E8F5E9 0%, #05CD99 100%);
+    color: white;
+    box-shadow: 0 8px 16px rgba(5, 205, 153, 0.2);
+}
+
+/* Text */
+.stat-content h3 {
+    font-size: 1.75rem !important;
+    font-weight: 800;
+    color: #1B2559;
+    letter-spacing: -0.03em;
+}
+
+.stat-content p {
+    font-size: 0.9rem !important;
+    font-weight: 600;
+    color: #A3AED0;
+}
+
+/* 4. Glass Table Card */
+.dashboard-card,
+.table-card {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 1) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 40px -10px rgba(112, 144, 176, 0.1) !important;
+    overflow: hidden;
+    margin-top: 32px;
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(112, 144, 176, 0.1);
+    background: transparent !important;
+    padding: 24px 32px !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h2 {
+    color: #1B2559;
+    font-weight: 800;
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+/* Modern Status Pills */
+.status-badge {
+    padding: 8px 16px !important;
+    border-radius: 30px !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-badge::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status-badge.status-completed {
+    background: linear-gradient(135deg, #E0FDF4 0%, #FFFFFF 100%);
+    color: #05CD99;
+    border: 1px solid #05CD99;
+}
+
+.status-badge.status-ready {
+    background: linear-gradient(135deg, #E0E7FF 0%, #FFFFFF 100%);
+    color: #4318FF;
+    border: 1px solid #4318FF;
+}
+
+.status-badge.status-pending {
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFFFFF 100%);
+    color: #FFB547;
+    border: 1px solid #FFB547;
+}
+
+/* 5. Buttons */
+.btn {
+    border-radius: 50px !important;
+    font-weight: 700 !important;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em;
+    padding: 12px 28px !important;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.5) !important;
+    color: #4318FF !important;
+    border: 1px solid #4318FF !important;
+}
+
+.btn-secondary:hover {
+    background: #4318FF !important;
+    color: #FFF !important;
+    box-shadow: 0 8px 20px rgba(67, 24, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* 6. Header Overrides */
+.page-header h1 {
+    background: linear-gradient(90deg, #1B2559 0%, #4318FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800 !important;
+    font-size: 2rem !important;
+}
+
+.text-secondary {
+    color: #A3AED0 !important;
+    font-size: 0.95rem;
+    margin-top: 4px;
+}
+
+/* 7. Premium Header & Profile Overrides */
+.admin-header {
+    background: #111c44 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    height: 80px;
+}
+
+.admin-logo {
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #FFF !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-logo svg {
+    color: #4318FF;
+    filter: drop-shadow(0 0 8px rgba(67, 24, 255, 0.5));
+    width: 32px;
+    height: 32px;
+}
+
+.user-profile-btn {
+    background: #FFF !important;
+    padding: 4px !important;
+    border-radius: 50px !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-width: 64px;
+    justify-content: flex-end;
+}
+
+.user-profile-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.user-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4318FF 0%, #764EFF 100%) !important;
+    color: #FFF !important;
+    font-weight: 700;
+    font-size: 0.9rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-name {
+    display: none !important;
+}
+
+.user-profile-btn svg {
+    display: none !important;
+}
+
+/* 8. Table Styling Final Polish */
+.data-table th {
+    background: rgba(244, 247, 254, 0.8) !important;
+    color: #8F9BBA;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    padding: 20px 24px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.data-table td {
+    padding: 20px 24px !important;
+    color: #1B2559;
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: transparent;
+}
+
+.data-table tbody tr:hover td {
+    background: rgba(244, 247, 254, 0.6);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+/* 11. Verification Modal Styles */
+.verification-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #F4F7FE;
+    padding: 24px;
+    border-radius: 16px;
+    margin-bottom: 8px;
+}
+
+.verification-heading {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1B2559;
+    margin-bottom: 8px;
+}
+
+.verification-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 12px;
+    background: #FFF;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.verification-item:hover {
+    border-color: #4318FF;
+    transform: translateX(4px);
+}
+
+.verification-item input[type='checkbox'] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #A3AED0;
+    border-radius: 6px;
+    display: grid;
+    place-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.verification-item input[type='checkbox']::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em white;
+    transform-origin: center;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    background-color: white;
+}
+
+.verification-item input[type='checkbox']:checked {
+    background-color: #4318FF;
+    border-color: #4318FF;
+}
+
+.verification-item input[type='checkbox']:checked::before {
+    transform: scale(1);
+    background-color: white;
+}
+
+.verification-item span {
+    font-size: 0.95rem;
+    color: #2B3674;
+    font-weight: 500;
+}
+
+
+/* 12. Manual Item Verification Checkbox */
+.item-checkbox-wrapper {
+    position: relative;
+    cursor: pointer;
+    margin-right: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.item-checkbox-wrapper input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    height: 24px;
+    width: 24px;
+    background-color: #FFF;
+    border: 2px solid #A3AED0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.item-checkbox-wrapper:hover input ~ .checkmark {
+    border-color: #4318FF;
+}
+
+.item-checkbox-wrapper input:checked ~ .checkmark {
+    background-color: #4318FF;
+    border-color: #4318FF;
+}
+
+.item-checkbox-wrapper .checkmark svg {
+    transform: scale(0);
+    transition: transform 0.2s ease;
+}
+
+.item-checkbox-wrapper input:checked ~ .checkmark svg {
+    transform: scale(1);
+}
+
+/* Checked Item State */
+.order-item.verified {
+    opacity: 0.5;
+    background: #F4F7FE !important;
+}
+
+.order-item.verified .item-info h3 {
+    text-decoration: line-through;
+    color: #A3AED0 !important;
+}
+

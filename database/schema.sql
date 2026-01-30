@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
+    profile_picture VARCHAR(255),
     role ENUM('customer', 'admin', 'staff') DEFAULT 'customer',
+    is_blocked TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
@@ -45,6 +47,7 @@ CREATE TABLE IF NOT EXISTS products (
     price DECIMAL(10,2) NOT NULL,
     original_price DECIMAL(10,2),
     stock INT DEFAULT 0,
+    unit VARCHAR(50) DEFAULT 'units',
     image_url VARCHAR(255),
     description TEXT,
     dietary_tags VARCHAR(255),
@@ -139,23 +142,23 @@ INSERT INTO categories (name, icon, display_order) VALUES
 -- ============================================
 -- Insert Sample Products
 -- ============================================
-INSERT INTO products (name, category_id, price, original_price, stock, image_url, description, dietary_tags, is_sale) VALUES
+INSERT INTO products (name, category_id, price, original_price, stock, unit, image_url, description, dietary_tags, is_sale) VALUES
 -- Fresh Produce
-('Green Cabbage', 1, 5.29, NULL, 50, 'images/products/cabbage.jpg', 'Fresh organic green cabbage', 'Vegan,Organic', 0),
-('Organic Bananas', 2, 9.60, NULL, 100, 'images/products/bananas.jpg', 'Fresh organic bananas', 'Vegan,Organic', 0),
-('Vine Ripe Tomatoes', 3, 2.49, NULL, 75, 'images/products/tomatoes.jpg', 'Fresh vine ripe tomatoes', 'Vegan,Organic', 0),
-('Hass Avocado', 1, 5.90, NULL, 60, 'images/products/avocado.jpg', 'Fresh Hass avocados', 'Vegan,Organic', 0),
-('Large Lemons', 2, 0.79, NULL, 80, 'images/products/lemons.jpg', 'Fresh large lemons', 'Vegan,Organic', 0),
-('Gala Apples', 2, 1.99, 2.49, 90, 'images/products/apples.jpg', 'Fresh Gala apples', 'Vegan,Organic', 1),
+('Green Cabbage', 1, 5.29, NULL, 50, 'kg', 'images/products/cabbage.jpg', 'Fresh organic green cabbage', 'Vegan,Organic', 0),
+('Organic Bananas', 2, 9.60, NULL, 100, 'kg', 'images/products/bananas.jpg', 'Fresh organic bananas', 'Vegan,Organic', 0),
+('Vine Ripe Tomatoes', 3, 2.49, NULL, 75, 'kg', 'images/products/tomatoes.jpg', 'Fresh vine ripe tomatoes', 'Vegan,Organic', 0),
+('Hass Avocado', 1, 5.90, NULL, 60, 'kg', 'images/products/avocado.jpg', 'Fresh Hass avocados', 'Vegan,Organic', 0),
+('Large Lemons', 2, 0.79, NULL, 80, 'kg', 'images/products/lemons.jpg', 'Fresh large lemons', 'Vegan,Organic', 0),
+('Gala Apples', 2, 1.99, 2.49, 90, 'kg', 'images/products/apples.jpg', 'Fresh Gala apples', 'Vegan,Organic', 1),
 
 -- Dairy
-('Fresh Milk 1L', 4, 2.99, NULL, 40, 'images/products/milk.jpg', 'Fresh whole milk', 'Vegetarian', 0),
-('Cheddar Cheese', 4, 4.99, NULL, 30, 'images/products/cheese.jpg', 'Aged cheddar cheese', 'Vegetarian', 0),
+('Fresh Milk 1L', 4, 2.99, NULL, 40, 'L', 'images/products/milk.jpg', 'Fresh whole milk', 'Vegetarian', 0),
+('Cheddar Cheese', 4, 4.99, NULL, 30, 'units', 'images/products/cheese.jpg', 'Aged cheddar cheese', 'Vegetarian', 0),
 
 -- Bakery
-('Whole Wheat Bread', 5, 3.49, NULL, 25, 'images/products/bread.jpg', 'Fresh whole wheat bread', 'Vegetarian', 0),
-('Croissants 6pk', 5, 5.99, NULL, 20, 'images/products/croissants.jpg', 'Butter croissants', 'Vegetarian', 0),
+('Whole Wheat Bread', 5, 3.49, NULL, 25, 'loaf', 'images/products/bread.jpg', 'Fresh whole wheat bread', 'Vegetarian', 0),
+('Croissants 6pk', 5, 5.99, NULL, 20, 'pack', 'images/products/croissants.jpg', 'Butter croissants', 'Vegetarian', 0),
 
 -- Beverages
-('Orange Juice 1L', 7, 3.99, NULL, 50, 'images/products/orange-juice.jpg', 'Fresh orange juice', 'Vegan', 0),
-('Sparkling Water 6pk', 7, 4.49, NULL, 60, 'images/products/water.jpg', 'Sparkling mineral water', 'Vegan', 0);
+('Orange Juice 1L', 7, 3.99, NULL, 50, 'L', 'images/products/orange-juice.jpg', 'Fresh orange juice', 'Vegan', 0),
+('Sparkling Water 6pk', 7, 4.49, NULL, 60, 'pack', 'images/products/water.jpg', 'Sparkling mineral water', 'Vegan', 0);

@@ -1,10 +1,20 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
-// Get cart count for current user
+// Get user info and cart count
 $cart_count = 0;
+$user_data = null;
 if (is_logged_in()) {
     $user_id = get_user_id();
+    
+    // User data
+    $user_query = "SELECT full_name, profile_picture FROM users WHERE id = $user_id";
+    $user_result = $conn->query($user_query);
+    if ($user_result) {
+        $user_data = $user_result->fetch_assoc();
+    }
+    
+    // Cart count
     $cart_query = "SELECT SUM(quantity) as total FROM cart WHERE user_id = $user_id";
     $cart_result = $conn->query($cart_query);
     if ($cart_result && $row = $cart_result->fetch_assoc()) {
@@ -18,10 +28,10 @@ if (is_logged_in()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title ?? 'Grab & Go - Smart Supermarket'; ?></title>
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/design-system.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/components.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/design-system.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/components.css?v=<?php echo time(); ?>">
     <?php if (isset($extra_css)): ?>
-        <link rel="stylesheet" href="<?php echo BASE_URL . $extra_css; ?>">
+        <link rel="stylesheet" href="<?php echo BASE_URL . $extra_css; ?>?v=<?php echo time(); ?>">
     <?php endif; ?>
 </head>
 <body>
@@ -30,7 +40,11 @@ if (is_logged_in()) {
             <div class="header-main flex items-center justify-between">
                 <!-- Logo -->
                 <a href="<?php echo BASE_URL; ?>products/listing.php" class="logo">
-                    <div class="logo-icon"></div>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
                     <span>GRAB & GO</span>
                 </a>
                 
@@ -47,7 +61,7 @@ if (is_logged_in()) {
                 </nav>
                 
                 <!-- Right Side Icons -->
-                <div class="flex items-center gap-lg">
+                <div class="header-actions flex items-center gap-lg">
                     <?php if (is_logged_in()): ?>
                         <div class="cart-icon-wrapper">
                             <a href="<?php echo BASE_URL; ?>cart/cart.php">
@@ -62,12 +76,17 @@ if (is_logged_in()) {
                             </a>
                         </div>
                         
-                        <div class="user-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                        </div>
+                        <a href="<?php echo BASE_URL; ?>profile/view.php" class="user-profile-link">
+                            <div class="user-avatar-small">
+                                <?php if ($user_data && $user_data['profile_picture']): ?>
+                                    <img src="<?php echo BASE_URL . $user_data['profile_picture']; ?>" alt="Profile" class="avatar-img">
+                                <?php else: ?>
+                                    <div class="avatar-letter">
+                                        <?php echo strtoupper(substr($user_data['full_name'] ?? 'U', 0, 1)); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </a>
                     <?php else: ?>
                         <a href="<?php echo BASE_URL; ?>auth/login.php" class="btn btn-primary">Sign In</a>
                     <?php endif; ?>

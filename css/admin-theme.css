@@ -1,0 +1,114 @@
+/* Dark Mode Theme Variables & Overrides */
+[data-theme="dark"] {
+    --color-background: #0B1437;
+    --color-card-bg: #111C44;
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #A3AED0;
+    --color-border: #2B3674;
+    --color-primary-light: #1B2559;
+    --shadow-soft: 0px 18px 40px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0px 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+}
+
+/* Sidebar & Navigation */
+[data-theme="dark"] .admin-sidebar {
+    background: #111C44;
+    border-right: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] .sidebar-item {
+    color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .sidebar-item:hover,
+[data-theme="dark"] .sidebar-item.active {
+    color: #fff;
+    background: var(--color-primary);
+}
+
+/* Cards & Containers */
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .chart-card,
+[data-theme="dark"] .logs-filter-card,
+[data-theme="dark"] .logs-table-card,
+[data-theme="dark"] .attendance-table-card,
+[data-theme="dark"] .product-card-grid,
+[data-theme="dark"] .stat-mini-card,
+[data-theme="dark"] .card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+}
+
+/* Tables */
+[data-theme="dark"] .data-table th {
+    background: #1B2559 !important;
+    color: #A3AED0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] .data-table td {
+    border-bottom: 1px solid var(--color-border);
+    color: #FFF;
+}
+
+[data-theme="dark"] .data-table tr:hover td {
+    background-color: #1B2559;
+}
+
+/* Forms & Inputs */
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+    background-color: #0B1437;
+    border-color: #2B3674;
+    color: #FFF;
+}
+
+/* Specific UI Elements */
+[data-theme="dark"] .date-nav,
+[data-theme="dark"] .nav-btn,
+[data-theme="dark"] .status-group,
+[data-theme="dark"] .time-input {
+    background: #0B1437;
+    color: #FFF;
+}
+
+[data-theme="dark"] .nav-btn:hover {
+    background: var(--color-primary);
+}
+
+[data-theme="dark"] .empty-icon {
+    background: #1B2559 !important;
+}
+
+[data-theme="dark"] .text-secondary,
+[data-theme="dark"] .text-muted {
+    color: #A3AED0 !important;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+    color: #FFF;
+}
+
+/* Header Override */
+[data-theme="dark"] .admin-header {
+    background: #111C44;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}

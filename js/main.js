@@ -232,17 +232,13 @@ function initFilters() {
         checkbox.addEventListener('change', applyFilters);
     });
 
-    // Price range slider
-    const priceRange = document.querySelector('.price-range');
-    if (priceRange) {
-        priceRange.addEventListener('input', applyFilters);
-    }
 
     // Dietary filters
     document.querySelectorAll('.dietary-filter').forEach(checkbox => {
         checkbox.addEventListener('change', applyFilters);
     });
 }
+
 
 function applyFilters() {
     const categories = Array.from(document.querySelectorAll('.category-filter:checked'))
@@ -251,13 +247,10 @@ function applyFilters() {
     const dietary = Array.from(document.querySelectorAll('.dietary-filter:checked'))
         .map(cb => cb.value);
 
-    const priceMax = document.querySelector('.price-range')?.value;
-
     // Build query string
     const params = new URLSearchParams();
     if (categories.length) params.append('categories', categories.join(','));
     if (dietary.length) params.append('dietary', dietary.join(','));
-    if (priceMax) params.append('max_price', priceMax);
 
     // Reload page with filters
     window.location.href = '?' + params.toString();

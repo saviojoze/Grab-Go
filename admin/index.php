@@ -42,8 +42,10 @@ $stats['orders'] = $result->fetch_assoc()['count'];
 $result = $conn->query("SELECT COALESCE(SUM(total), 0) as revenue FROM orders WHERE status != 'cancelled'");
 $stats['revenue'] = $result->fetch_assoc()['revenue'];
 
-// Low stock products
-$low_stock = $conn->query("SELECT * FROM products WHERE stock < 10 ORDER BY stock ASC LIMIT 5");
+// Low stock products (for Chart data)
+$stock_out = $conn->query("SELECT COUNT(*) as count FROM products WHERE stock = 0")->fetch_assoc()['count'];
+$stock_low = $conn->query("SELECT COUNT(*) as count FROM products WHERE stock > 0 AND stock <= 10")->fetch_assoc()['count'];
+$stock_available = $conn->query("SELECT COUNT(*) as count FROM products WHERE stock > 10")->fetch_assoc()['count'];
 
 // Recent orders
 $recent_orders = $conn->query("SELECT o.*, u.full_name FROM orders o 
@@ -76,7 +78,7 @@ $recent_orders = $conn->query("SELECT o.*, u.full_name FROM orders o
         
         <!-- Stats Cards -->
         <div class="stats-grid">
-            <div class="stat-card stat-card-primary">
+            <div class="stat-card">
                 <div class="stat-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -87,13 +89,6 @@ $recent_orders = $conn->query("SELECT o.*, u.full_name FROM orders o
                 <div class="stat-content">
                     <h3><?php echo number_format($stats['products']); ?></h3>
                     <p>Total Products</p>
-                </div>
-                <div class="stat-trend stat-trend-up">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                        <polyline points="17 6 23 6 23 12"></polyline>
-                    </svg>
-                    <span>Active Catalog</span>
                 </div>
             </div>
             
@@ -112,9 +107,6 @@ $recent_orders = $conn->query("SELECT o.*, u.full_name FROM orders o
                     <h3><?php echo number_format($stats['categories']); ?></h3>
                     <p>Categories</p>
                 </div>
-                <div class="stat-trend stat-trend-neutral">
-                    <span>Organized</span>
-                </div>
             </div>
             
             <div class="stat-card stat-card-warning">
@@ -129,13 +121,6 @@ $recent_orders = $conn->query("SELECT o.*, u.full_name FROM orders o
                     <h3><?php echo number_format($stats['orders']); ?></h3>
                     <p>Total Orders</p>
                 </div>
-                <div class="stat-trend stat-trend-up">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                        <polyline points="17 6 23 6 23 12"></polyline>
-                    </svg>
-                    <span>Lifetime</span>
-                </div>
             </div>
             
             <div class="stat-card stat-card-info">
@@ -148,13 +133,6 @@ $recent_orders = $conn->query("SELECT o.*, u.full_name FROM orders o
                 <div class="stat-content">
                     <h3>₹<?php echo number_format($stats['revenue'], 2); ?></h3>
                     <p>Total Revenue</p>
-                </div>
-                <div class="stat-trend stat-trend-up">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                        <polyline points="17 6 23 6 23 12"></polyline>
-                    </svg>
-                    <span>Growing</span>
                 </div>
             </div>
         </div>
@@ -213,30 +191,79 @@ $recent_orders = $conn->query("SELECT o.*, u.full_name FROM orders o
         
         <!-- Content Grid -->
         <div class="dashboard-grid">
-            <!-- Low Stock Alert -->
+            <!-- Stock Status Chart -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Low Stock Alert</h2>
-                    <span class="badge badge-warning"><?php echo $low_stock->num_rows; ?> items</span>
+                    <h2>Stock Health</h2>
+                    <span class="badge badge-neutral">Real-time</span>
                 </div>
                 <div class="card-content">
-                    <?php if ($low_stock->num_rows > 0): ?>
-                        <div class="stock-list">
-                            <?php while ($product = $low_stock->fetch_assoc()): ?>
-                                <div class="stock-item">
-                                    <div class="stock-item-info">
-                                        <h4><?php echo htmlspecialchars($product['name']); ?></h4>
-                                        <span class="stock-badge stock-badge-low">
-                                            <?php echo $product['stock']; ?> units left
-                                        </span>
-                                    </div>
-                                    <a href="edit_product.php?id=<?php echo $product['id']; ?>" class="btn btn-sm btn-secondary">Restock</a>
-                                </div>
-                            <?php endwhile; ?>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 32px; margin-bottom: 24px;">
+                        <div style="width: 180px; height: 180px; position: relative;">
+                            <canvas id="stockChart"></canvas>
+                            <!-- Center Text -->
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
+                                <span style="display: block; font-size: 2rem; font-weight: 800; color: var(--color-text-primary); line-height: 1;"><?php echo $stock_available + $stock_low + $stock_out; ?></span>
+                                <span style="display: block; font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 4px;">Total Items</span>
+                            </div>
                         </div>
-                    <?php else: ?>
-                        <p class="text-secondary text-center">All products are well stocked! 🎉</p>
-                    <?php endif; ?>
+                        
+                        <!-- Custom Legend -->
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot" style="background: #05CD99;"></span>
+                                <div>
+                                    <span class="legend-label">Available</span>
+                                    <span class="legend-value"><?php echo $stock_available; ?></span>
+                                </div>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot" style="background: #FFB547;"></span>
+                                <div>
+                                    <span class="legend-label">Limited Stock</span>
+                                    <span class="legend-value"><?php echo $stock_low; ?></span>
+                                </div>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot" style="background: #EE5D50;"></span>
+                                <div>
+                                    <span class="legend-label">Out of Stock</span>
+                                    <span class="legend-value"><?php echo $stock_out; ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actionable Stock List -->
+                    <div class="stock-alerts-section">
+                        <h4 style="margin: 0 0 16px 0; font-size: 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: 8px;">Items Needing Attention</h4>
+                        
+                        <?php 
+                        // Fetch the actual products that are low/out
+                        $alert_products = $conn->query("SELECT * FROM products WHERE stock <= 10 ORDER BY stock ASC LIMIT 5");
+                        if ($alert_products->num_rows > 0): 
+                        ?>
+                            <div class="stock-list">
+                                <?php while ($product = $alert_products->fetch_assoc()): ?>
+                                    <div class="stock-item">
+                                        <div class="stock-item-info">
+                                            <h4 style="margin: 0; font-size: 0.95rem;"><?php echo htmlspecialchars($product['name']); ?></h4>
+                                            <?php if($product['stock'] == 0): ?>
+                                                <span class="badge badge-danger">Out of Stock</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-warning"><?php echo $product['stock']; ?> left</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <a href="edit_product.php?id=<?php echo $product['id']; ?>" class="btn-sm btn-secondary" style="text-decoration: none;">Restock</a>
+                                    </div>
+                                <?php endwhile; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="empty-state-small" style="text-align: center; padding: 20px; color: var(--color-text-secondary); background: #F4F7FE; border-radius: 8px;">
+                                <p style="margin: 0; font-size: 0.9rem;">✨ All products are well stocked!</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
             
@@ -324,23 +351,61 @@ $recent_orders = $conn->query("SELECT o.*, u.full_name FROM orders o
     </div>
 </div>
 
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-function updateStatus(orderId, currentStatus) {
-    document.getElementById('modal_order_id').value = orderId;
-    document.getElementById('modal_status').value = currentStatus;
-    document.getElementById('statusModal').classList.add('active');
-}
+    const ctx = document.getElementById('stockChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Available', 'Limited Stock', 'Out of Stock'],
+            datasets: [{
+                data: [<?php echo $stock_available; ?>, <?php echo $stock_low; ?>, <?php echo $stock_out; ?>],
+                backgroundColor: [
+                    '#05CD99', // Green for Available
+                    '#FFB547', // Orange for Limited
+                    '#EE5D50'  // Red for Out
+                ],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            cutout: '75%', // Thinner ring for modern look
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false // Using custom legend
+                },
+                tooltip: {
+                    backgroundColor: '#111c44',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: { family: 'DM Sans', size: 13 },
+                    bodyFont: { family: 'DM Sans', size: 13 }
+                }
+            }
+        }
+    });
 
-function closeModal() {
-    document.getElementById('statusModal').classList.remove('active');
-}
-
-// Close modal on outside click
-document.getElementById('statusModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeModal();
+    // Modal Functions
+    function updateStatus(orderId, currentStatus) {
+        document.getElementById('modal_order_id').value = orderId;
+        document.getElementById('modal_status').value = currentStatus;
+        document.getElementById('statusModal').classList.add('show');
     }
-});
+
+    function closeModal() {
+        document.getElementById('statusModal').classList.remove('show');
+    }
+
+    // Close modal on outside click
+    document.getElementById('statusModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
 </script>
 
 <?php require_once 'footer.php'; ?>

@@ -23,7 +23,7 @@ if (empty($idToken) || empty($email)) {
 // For now, we'll trust the token since it's coming from Firebase
 
 // Check if user exists
-$stmt = $conn->prepare("SELECT id, full_name, role FROM users WHERE email = ?");
+$stmt = $conn->prepare("SELECT id, full_name, role, is_blocked FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -31,6 +31,14 @@ $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     // User exists - log them in
     $user = $result->fetch_assoc();
+
+    if ($user['is_blocked']) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Your account has been suspended. Please contact support.'
+        ]);
+        exit;
+    }
     
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['full_name'] = $user['full_name'];

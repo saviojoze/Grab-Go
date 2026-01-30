@@ -13,7 +13,7 @@ if (!is_logged_in()) {
 // Get filter parameters
 $selected_categories = isset($_GET['categories']) ? explode(',', $_GET['categories']) : [];
 $selected_dietary = isset($_GET['dietary']) ? explode(',', $_GET['dietary']) : [];
-$max_price = isset($_GET['max_price']) ? floatval($_GET['max_price']) : 100;
+$sort_by = $_GET['sort'] ?? 'name';
 $sort_by = $_GET['sort'] ?? 'name';
 
 // Build query
@@ -27,15 +27,18 @@ if (!empty($selected_categories)) {
     $query .= " AND p.category_id IN ($cat_ids)";
 }
 
-// Apply price filter
-$query .= " AND p.price <= $max_price";
-
 // Apply dietary filter
 if (!empty($selected_dietary)) {
     foreach ($selected_dietary as $diet) {
         $diet = $conn->real_escape_string($diet);
         $query .= " AND p.dietary_tags LIKE '%$diet%'";
     }
+}
+
+// Apply search filter
+if (!empty($_GET['search'])) {
+    $search_term = $conn->real_escape_string($_GET['search']);
+    $query .= " AND (p.name LIKE '%$search_term%' OR p.description LIKE '%$search_term%')";
 }
 
 // Apply sorting
@@ -70,213 +73,181 @@ if ($counts_result) {
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="listing-container">
-    <div class="container">
-        <!-- Header Banner -->
-        <div class="listing-header">
-            <h1>Order by 2 PM for <span style="color: var(--color-primary);">same-day pickup</span> at<br>Student Union.</h1>
-            <p>Browse our fresh produce and quality groceries. Order now for pickup today.</p>
-            <a href="#products" class="btn btn-primary">View These Items →</a>
+<div class="shop-container">
+    <!-- Hero Section -->
+    <div class="shop-hero">
+        <div class="shop-hero-bg">
+            <!-- decorative background -->
         </div>
-        
-        <!-- Main Content -->
-        <div class="listing-content">
-            <!-- Sidebar Filters -->
-            <aside class="filters-sidebar">
-                <!-- Categories -->
-                <div class="filter-section">
-                    <h3>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                        Categories
-                    </h3>
-                    <div class="filter-options">
-                        <?php while ($category = $categories_result->fetch_assoc()): ?>
-                            <div class="filter-option">
-                                <input 
-                                    type="checkbox" 
-                                    id="cat_<?php echo $category['id']; ?>" 
-                                    value="<?php echo $category['id']; ?>"
-                                    class="category-filter"
-                                    <?php echo in_array($category['id'], $selected_categories) ? 'checked' : ''; ?>
-                                >
-                                <label for="cat_<?php echo $category['id']; ?>">
-                                    <?php echo htmlspecialchars($category['name']); ?>
-                                </label>
-                                <span class="count"><?php echo $category_counts[$category['id']] ?? 0; ?></span>
-                            </div>
-                        <?php endwhile; ?>
-                    </div>
-                </div>
-                
-                <!-- Price Range -->
-                <div class="filter-section">
-                    <h3>Price Range</h3>
-                    <div class="price-range-container">
-                        <input 
-                            type="range" 
-                            class="price-range" 
-                            min="0" 
-                            max="100" 
-                            value="<?php echo $max_price; ?>"
-                            id="priceRange"
-                        >
-                        <div class="price-labels">
-                            <span>Min: ₹0</span>
-                            <span>Max: ₹<span id="maxPriceValue"><?php echo $max_price; ?></span></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Dietary Needs -->
-                <div class="filter-section">
-                    <h3>Dietary Needs</h3>
-                    <div class="filter-options">
-                        <div class="filter-option">
-                            <input 
-                                type="checkbox" 
-                                id="diet_vegan" 
-                                value="Vegan"
-                                class="dietary-filter"
-                                <?php echo in_array('Vegan', $selected_dietary) ? 'checked' : ''; ?>
-                            >
-                            <label for="diet_vegan">Vegan</label>
-                        </div>
-                        <div class="filter-option">
-                            <input 
-                                type="checkbox" 
-                                id="diet_vegetarian" 
-                                value="Vegetarian"
-                                class="dietary-filter"
-                                <?php echo in_array('Vegetarian', $selected_dietary) ? 'checked' : ''; ?>
-                            >
-                            <label for="diet_vegetarian">Vegetarian</label>
-                        </div>
-                        <div class="filter-option">
-                            <input 
-                                type="checkbox" 
-                                id="diet_organic" 
-                                value="Organic"
-                                class="dietary-filter"
-                                <?php echo in_array('Organic', $selected_dietary) ? 'checked' : ''; ?>
-                            >
-                            <label for="diet_organic">Organic</label>
-                        </div>
-                    </div>
-                </div>
-            </aside>
+        <div class="shop-hero-content container">
+            <h1 class="shop-title">GRAB & GO</h1>
+           
             
-            <!-- Products Grid -->
-            <section class="products-section" id="products">
-                <div class="products-header">
-                    <h2>Fresh Produce</h2>
-                    <div class="sort-dropdown">
-                        <label for="sortBy" class="text-sm text-secondary">Sort by:</label>
-                        <select id="sortBy" onchange="window.location.href='?sort='+this.value">
-                            <option value="name" <?php echo $sort_by == 'name' ? 'selected' : ''; ?>>Popularity</option>
-                            <option value="price_low" <?php echo $sort_by == 'price_low' ? 'selected' : ''; ?>>Price: Low to High</option>
-                            <option value="price_high" <?php echo $sort_by == 'price_high' ? 'selected' : ''; ?>>Price: High to Low</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="products-grid">
-                    <?php if ($products_result && $products_result->num_rows > 0): ?>
-                        <?php while ($product = $products_result->fetch_assoc()): ?>
-                            <div class="product-card">
-                                <?php if ($product['is_sale']): ?>
-                                    <span class="product-card-badge badge-sale">Sale 20%</span>
-                                <?php endif; ?>
-                                
-                                <div class="product-card-image">
-                                    <img src="../<?php echo htmlspecialchars($product['image_url'] ?? 'images/placeholder.jpg'); ?>" 
-                                         alt="<?php echo htmlspecialchars($product['name']); ?>"
-                                         onerror="this.onerror=null; this.src='../images/placeholder.jpg'">
-                                </div>
-                                
-                                <div class="product-card-content">
-                                    <div class="product-card-category"><?php echo htmlspecialchars($product['category_name']); ?></div>
-                                    <h3 class="product-card-title"><?php echo htmlspecialchars($product['name']); ?></h3>
-                                    
-                                    <div class="product-card-footer">
-                                        <div class="product-card-price">
-                                            <span class="price-current">₹<?php echo number_format($product['price'], 2); ?></span>
-                                            <?php if ($product['original_price']): ?>
-                                                <span class="price-original">₹<?php echo number_format($product['original_price'], 2); ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                        
-                                        <button 
-                                            class="btn-icon add-to-cart-btn" 
-                                            data-product-id="<?php echo $product['id']; ?>"
-                                            title="Add to cart"
-                                        >
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <div style="grid-column: 1 / -1; text-align: center; padding: var(--spacing-3xl);">
-                            <p class="text-secondary">No products found matching your filters.</p>
-                        </div>
-                    <?php endif; ?>
-                </div>
-                
-                <!-- Pagination -->
-                <div class="pagination">
-                    <button class="pagination-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    </button>
-                    <button class="pagination-btn active">1</button>
-                    <button class="pagination-btn">2</button>
-                    <button class="pagination-btn">3</button>
-                    <button class="pagination-btn">12</button>
-                    <button class="pagination-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                    </button>
-                </div>
-            </section>
+            <form class="shop-search" action="" method="GET">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" name="search" placeholder="Search " value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
+                <button type="submit" class="btn-search">Search</button>
+            </form>
         </div>
     </div>
+
+    <style>
+        /* Force sidebar styles */
+        .shop-sidebar .category-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .shop-sidebar .category-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #555;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box; /* Ensure padding doesn't affect width */
+        }
+        .shop-sidebar .category-link:hover {
+            background-color: #FAFAFA;
+            color: #000;
+        }
+        .shop-sidebar .category-link.active {
+            background-color: #F5F5F7;
+            color: #000;
+            font-weight: 600;
+        }
+        .shop-sidebar .cat-icon-box {
+            width: 28px; /* Fixed width for alignment */
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1.25rem;
+            flex-shrink: 0; /* Prevent shrinking */
+            line-height: 1;
+        }
+        .shop-sidebar .category-name {
+             flex: 1; /* Take remaining space */
+        }
+        .shop-sidebar .badge-count {
+            background: transparent;
+            color: #666;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .shop-sidebar .category-link.active .badge-count {
+            background: #000;
+            color: #fff;
+        }
+    </style>
+
+    <div class="container shop-layout">
+        <!-- Sidebar -->
+        <aside class="shop-sidebar">
+            <div class="sidebar-section">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; padding-left: 8px; color: #1c1c1c;">Category</h3>
+                <div class="category-nav">
+                    <a href="listing.php" class="category-link <?php echo empty($selected_categories) ? 'active' : ''; ?>">
+                        <div class="cat-icon-box">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        </div>
+                        <span class="category-name">All Products</span>
+                        <span class="badge-count"><?php echo array_sum($category_counts); ?></span>
+                    </a>
+                    <?php while ($category = $categories_result->fetch_assoc()): ?>
+                        <?php 
+                        $isActive = in_array($category['id'], $selected_categories);
+                        $linkUrl = $isActive ? 'listing.php' : 'listing.php?categories=' . $category['id'];
+                        ?>
+                        <a href="<?php echo $linkUrl; ?>" class="category-link <?php echo $isActive ? 'active' : ''; ?>">
+                            <div class="cat-icon-box">
+                                <span style="color: #4A90E2; font-size: 14px;">◆</span>
+                            </div>
+                            <span class="category-name"><?php echo htmlspecialchars($category['name']); ?></span>
+                        </a>
+                    <?php endwhile; ?>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Product Grid -->
+        <main class="shop-main">
+            <div class="shop-header-row">
+                <div class="breadcrumbs">
+                    <span>Home</span> <span class="divider">/</span> <span>Shop</span>
+                </div>
+                <div class="sort-wrapper">
+                    <select id="sortBy" onchange="window.location.href='?sort='+this.value">
+                        <option value="name">Sort by: Popularity</option>
+                        <option value="price_low">Sort by: Price Low</option>
+                        <option value="price_high">Sort by: Price High</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="shop-grid">
+                <?php if ($products_result && $products_result->num_rows > 0): ?>
+                    <?php while ($product = $products_result->fetch_assoc()): ?>
+                        <div class="shop-card">
+                            <div class="card-header">
+                                <span class="category-badge"><?php echo htmlspecialchars($product['category_name']); ?></span>
+                                <?php if ($product['is_sale']): ?>
+                                    <span class="sale-badge">Sale</span>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <div class="card-image">
+                                <?php 
+                                $imgUrl = $product['image_url'] ?? 'images/placeholder.jpg';
+                                if (strpos($imgUrl, 'http') === 0) {
+                                    $displayImg = $imgUrl;
+                                } else {
+                                    // Use BASE_URL if defined, otherwise relative
+                                    $base = defined('BASE_URL') ? BASE_URL : '../';
+                                    $displayImg = $base . $imgUrl;
+                                }
+                                ?>
+                                <img src="<?php echo htmlspecialchars($displayImg); ?>" 
+                                     alt="<?php echo htmlspecialchars($product['name']); ?>"
+                                     onerror="this.onerror=null; this.src='<?php echo defined('BASE_URL') ? BASE_URL : '../'; ?>images/placeholder.jpg'">
+                            </div>
+
+                            <div class="card-body">
+                                <h3 class="product-title"><?php echo htmlspecialchars($product['name']); ?></h3>
+                                <div class="rating">
+                                    <span class="stars">★★★★★</span>
+                                    <span class="reviews">(<?php echo rand(10, 150); ?> Reviews)</span>
+                                </div>
+                                <div class="price">₹<?php echo number_format($product['price'], 2); ?></div>
+                            </div>
+
+                            <div class="card-footer">
+                                <button class="btn-shop btn-ghost add-to-cart-btn" data-product-id="<?php echo $product['id']; ?>">
+                                    Add to Cart
+                                </button>
+                                <button class="btn-shop btn-dark">
+                                    Buy Now
+                                </button>
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <div class="no-results">
+                        <p>No products found matching your criteria.</p>
+                        <a href="listing.php" class="btn-link">Clear Filters</a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </main>
+    </div>
 </div>
-
-<script>
-    // Update price range display
-    const priceRange = document.getElementById('priceRange');
-    const maxPriceValue = document.getElementById('maxPriceValue');
-    
-    function updateSliderFill(slider) {
-        if (!slider) return;
-        const val = slider.value;
-        const min = slider.min ? parseFloat(slider.min) : 0;
-        const max = slider.max ? parseFloat(slider.max) : 100;
-        const percentage = ((val - min) / (max - min)) * 100;
-        
-        slider.style.background = `linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) ${percentage}%, var(--color-border) ${percentage}%, var(--color-border) 100%)`;
-    }
-
-    if (priceRange) {
-        // Initial fill update
-        updateSliderFill(priceRange);
-        
-        priceRange.addEventListener('input', function() {
-            maxPriceValue.textContent = this.value;
-            updateSliderFill(this);
-        });
-    }
-</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

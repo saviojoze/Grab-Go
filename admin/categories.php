@@ -67,11 +67,12 @@ if (isset($_GET['delete'])) {
 require_once 'header.php';
 
 // Get all categories
-$categories = $conn->query("SELECT c.*, COUNT(p.id) as product_count 
-                            FROM categories c 
-                            LEFT JOIN products p ON c.id = p.category_id 
-                            GROUP BY c.id 
-                            ORDER BY c.display_order");
+$categories_query = "SELECT c.*, COUNT(prod.id) as product_count 
+                     FROM categories c 
+                     LEFT JOIN products prod ON c.id = prod.category_id 
+                     GROUP BY c.id 
+                     ORDER BY c.display_order";
+$categories_result = $conn->query($categories_query);
 ?>
 
 <?php require_once 'sidebar.php'; ?>
@@ -111,7 +112,7 @@ $categories = $conn->query("SELECT c.*, COUNT(p.id) as product_count
         
         <!-- Categories Grid -->
         <div class="categories-grid">
-            <?php while ($category = $categories->fetch_assoc()): ?>
+            <?php while ($category = $categories_result->fetch_assoc()): ?>
                 <div class="category-card">
                     <div class="category-icon"><?php echo htmlspecialchars($category['icon']); ?></div>
                     <div class="category-info">
@@ -219,6 +220,7 @@ $categories = $conn->query("SELECT c.*, COUNT(p.id) as product_count
         </form>
     </div>
 </div>
+
 
 <script>
 function openAddModal() {

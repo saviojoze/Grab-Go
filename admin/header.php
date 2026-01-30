@@ -8,11 +8,22 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../css/design-system.css">
-    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin.css?v=<?php echo time() + 5; ?>">
+    <link rel="stylesheet" href="../css/admin-theme.css?v=<?php echo time(); ?>">
+    
+    <script>
+        // Init Theme
+        (function() {
+            const savedTheme = localStorage.getItem('adminToTheme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../images/logo.svg">

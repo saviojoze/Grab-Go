@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $price = floatval($_POST['price']);
     $original_price = !empty($_POST['original_price']) ? floatval($_POST['original_price']) : null;
     $stock = intval($_POST['stock']);
+    $unit = sanitize_input($_POST['unit'] ?? 'units');
     $description = sanitize_input($_POST['description']);
     $dietary_tags = sanitize_input($_POST['dietary_tags']);
     $is_sale = isset($_POST['is_sale']) ? 1 : 0;
@@ -57,8 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     // Update product
-    $stmt = $conn->prepare("UPDATE products SET name=?, category_id=?, price=?, original_price=?, stock=?, image_url=?, description=?, dietary_tags=?, is_sale=? WHERE id=?");
-    $stmt->bind_param("siddisssii", $name, $category_id, $price, $original_price, $stock, $image_url, $description, $dietary_tags, $is_sale, $product_id);
+    $stmt = $conn->prepare("UPDATE products SET name=?, category_id=?, price=?, original_price=?, stock=?, unit=?, image_url=?, description=?, dietary_tags=?, is_sale=? WHERE id=?");
+    $stmt->bind_param("siddisssiii", $name, $category_id, $price, $original_price, $stock, $unit, $image_url, $description, $dietary_tags, $is_sale, $product_id);
     
     if ($stmt->execute()) {
         $_SESSION['success'] = 'Product updated successfully!';
@@ -81,8 +82,8 @@ if (!$product) {
 
 require_once 'header.php';
 
-// Get categories
-$categories = $conn->query("SELECT * FROM categories ORDER BY name");
+// Get categories for selection
+$categories_result = $conn->query("SELECT id, name FROM categories ORDER BY display_order");
 ?>
 
 <?php require_once 'sidebar.php'; ?>
@@ -131,9 +132,9 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY name");
                         <label for="category_id" class="form-label">Category *</label>
                         <select id="category_id" name="category_id" class="form-input" required>
                             <option value="">Select a category</option>
-                            <?php while ($cat = $categories->fetch_assoc()): ?>
-                                <option value="<?php echo $cat['id']; ?>" <?php echo $product['category_id'] == $cat['id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($cat['name']); ?>
+                            <?php while ($category = $categories_result->fetch_assoc()): ?>
+                                <option value="<?php echo $category['id']; ?>" <?php echo $category['id'] == $product['category_id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($category['name']); ?>
                                 </option>
                             <?php endwhile; ?>
                         </select>
@@ -181,6 +182,22 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY name");
                             required
                             value="<?php echo $product['stock']; ?>"
                         >
+                    </div>
+
+                    <!-- Unit -->
+                    <div class="form-group">
+                        <label for="unit" class="form-label">Unit *</label>
+                        <select id="unit" name="unit" class="form-input" required>
+                            <option value="units" <?php echo ($product['unit'] ?? 'units') == 'units' ? 'selected' : ''; ?>>units (items)</option>
+                            <option value="kg" <?php echo ($product['unit'] ?? '') == 'kg' ? 'selected' : ''; ?>>kg (kilograms)</option>
+                            <option value="g" <?php echo ($product['unit'] ?? '') == 'g' ? 'selected' : ''; ?>>g (grams)</option>
+                            <option value="L" <?php echo ($product['unit'] ?? '') == 'L' ? 'selected' : ''; ?>>L (liters)</option>
+                            <option value="ml" <?php echo ($product['unit'] ?? '') == 'ml' ? 'selected' : ''; ?>>ml (milliliters)</option>
+                            <option value="pack" <?php echo ($product['unit'] ?? '') == 'pack' ? 'selected' : ''; ?>>pack</option>
+                            <option value="loaf" <?php echo ($product['unit'] ?? '') == 'loaf' ? 'selected' : ''; ?>>loaf</option>
+                            <option value="bunch" <?php echo ($product['unit'] ?? '') == 'bunch' ? 'selected' : ''; ?>>bunch</option>
+                        </select>
+                        <small class="form-hint">Unit measurement for stock</small>
                     </div>
                     
                     <!-- Description -->

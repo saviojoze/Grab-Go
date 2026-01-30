@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $price = floatval($_POST['price']);
     $original_price = !empty($_POST['original_price']) ? floatval($_POST['original_price']) : null;
     $stock = intval($_POST['stock']);
+    $unit = sanitize_input($_POST['unit'] ?? 'units');
     $description = sanitize_input($_POST['description']);
     $dietary_tags = sanitize_input($_POST['dietary_tags']);
     $is_sale = isset($_POST['is_sale']) ? 1 : 0;
@@ -43,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     // Insert product
-    $stmt = $conn->prepare("INSERT INTO products (name, category_id, price, original_price, stock, image_url, description, dietary_tags, is_sale) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("siddisssi", $name, $category_id, $price, $original_price, $stock, $image_url, $description, $dietary_tags, $is_sale);
+    $stmt = $conn->prepare("INSERT INTO products (name, category_id, price, original_price, stock, unit, image_url, description, dietary_tags, is_sale) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("siddississi", $name, $category_id, $price, $original_price, $stock, $unit, $image_url, $description, $dietary_tags, $is_sale);
     
     if ($stmt->execute()) {
         $_SESSION['success'] = 'Product added to inventory';
@@ -56,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 require_once 'header.php';
 
-// Get categories
-$categories = $conn->query("SELECT * FROM categories ORDER BY name");
+// Get categories for selection
+$categories_result = $conn->query("SELECT id, name FROM categories ORDER BY display_order");
 ?>
 
 <?php require_once 'sidebar.php'; ?>
@@ -104,10 +105,8 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY name");
                         <label for="category_id" class="form-label">Category *</label>
                         <select id="category_id" name="category_id" class="form-input" required>
                             <option value="">Select a category</option>
-                            <?php while ($cat = $categories->fetch_assoc()): ?>
-                                <option value="<?php echo $cat['id']; ?>">
-                                    <?php echo htmlspecialchars($cat['name']); ?>
-                                </option>
+                            <?php while ($category = $categories_result->fetch_assoc()): ?>
+                                <option value="<?php echo $category['id']; ?>"><?php echo htmlspecialchars($category['name']); ?></option>
                             <?php endwhile; ?>
                         </select>
                     </div>
@@ -154,6 +153,22 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY name");
                             required
                             placeholder="100"
                         >
+                    </div>
+
+                    <!-- Unit -->
+                    <div class="form-group">
+                        <label for="unit" class="form-label">Unit *</label>
+                        <select id="unit" name="unit" class="form-input" required>
+                            <option value="units">units (items)</option>
+                            <option value="kg">kg (kilograms)</option>
+                            <option value="g">g (grams)</option>
+                            <option value="L">L (liters)</option>
+                            <option value="ml">ml (milliliters)</option>
+                            <option value="pack">pack</option>
+                            <option value="loaf">loaf</option>
+                            <option value="bunch">bunch</option>
+                        </select>
+                        <small class="form-hint">Unit measurement for stock</small>
                     </div>
                     
                     <!-- Description -->

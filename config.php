@@ -34,7 +34,11 @@ define('SMTP_USERNAME', getenv('SMTP_USERNAME'));
 define('SMTP_PASSWORD', getenv('SMTP_PASSWORD'));
 define('SMTP_FROM_EMAIL', getenv('SMTP_FROM_EMAIL'));
 define('SMTP_FROM_NAME', getenv('SMTP_FROM_NAME') ?: 'Grab & Go');
-define('BASE_URL', getenv('BASE_URL') ?: '/Mini%20Project/');
+// Dynamic Base URL Calculation
+$script_dir = str_replace('\\', '/', __DIR__);
+$doc_root = str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']);
+$base_url = str_replace($doc_root, '', $script_dir);
+define('BASE_URL', rtrim($base_url, '/') . '/');
 
 // Firebase Configuration
 define('FIREBASE_API_KEY', getenv('FIREBASE_API_KEY'));

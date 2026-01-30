@@ -12,7 +12,7 @@ if (!is_logged_in()) {
 $user_id = get_user_id();
 
 // Get cart items
-$cart_query = "SELECT c.*, p.name, p.price, p.image_url, p.stock, cat.name as category_name 
+$cart_query = "SELECT c.*, p.name, p.price, p.image_url, p.stock, p.unit, cat.name as category_name 
                FROM cart c 
                JOIN products p ON c.product_id = p.id 
                LEFT JOIN categories cat ON p.category_id = cat.id
@@ -69,13 +69,14 @@ require_once __DIR__ . '/../includes/header.php';
                                 <div class="cart-item-details">
                                     <h3><?php echo htmlspecialchars($item['name']); ?></h3>
                                     <div class="cart-item-category"><?php echo htmlspecialchars($item['category_name']); ?></div>
-                                    <div class="cart-item-price">₹<?php echo number_format($item['price'], 2); ?></div>
+                                    <div class="cart-item-price">₹<?php echo number_format($item['price'], 2); ?> / <?php echo htmlspecialchars($item['unit'] ?? 'unit'); ?></div>
                                 </div>
                                 
                                 <div class="quantity-control" data-cart-id="<?php echo $item['id']; ?>">
                                     <button class="quantity-btn quantity-minus">-</button>
                                     <span class="quantity-value"><?php echo $item['quantity']; ?></span>
                                     <button class="quantity-btn quantity-plus">+</button>
+                                    <span class="text-secondary" style="margin-left: 8px; font-size: 0.9em;"><?php echo htmlspecialchars($item['unit'] ?? 'units'); ?></span>
                                 </div>
                                 
                                 <button 

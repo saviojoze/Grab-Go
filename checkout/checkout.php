@@ -12,7 +12,7 @@ if (!is_logged_in()) {
 $user_id = get_user_id();
 
 // Get cart items
-$cart_query = "SELECT c.*, p.name, p.price, p.image_url 
+$cart_query = "SELECT c.*, p.name, p.price, p.image_url, p.unit 
                FROM cart c 
                JOIN products p ON c.product_id = p.id 
                WHERE c.user_id = $user_id";
@@ -220,7 +220,7 @@ require_once __DIR__ . '/../includes/header.php';
                         </div>
                         <div class="summary-item-details">
                             <div class="summary-item-name"><?php echo htmlspecialchars($item['name']); ?></div>
-                            <div class="summary-item-quantity">Qty: <?php echo $item['quantity']; ?></div>
+                            <div class="summary-item-quantity">Qty: <?php echo $item['quantity']; ?> <?php echo htmlspecialchars($item['unit'] ?? 'units'); ?></div>
                         </div>
                         <div class="summary-item-price">₹<?php echo number_format($item['total'], 2); ?></div>
                     </div>

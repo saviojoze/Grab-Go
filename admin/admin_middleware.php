@@ -19,4 +19,3 @@ if (!is_admin()) {
 }
 
 // Admin is authenticated, continue
-?>
