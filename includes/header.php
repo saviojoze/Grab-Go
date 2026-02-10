@@ -56,7 +56,7 @@ if (is_logged_in()) {
                     <ul class="nav-menu">
                         <li><a href="<?php echo BASE_URL; ?>products/listing.php" class="nav-link <?php echo ($current_page ?? '') == 'shop' ? 'active' : ''; ?>">Shop</a></li>
                         <li><a href="<?php echo BASE_URL; ?>orders/my-orders.php" class="nav-link <?php echo ($current_page ?? '') == 'my-orders' ? 'active' : ''; ?>">My Orders</a></li>
-                        <li><a href="#" class="nav-link">Locations</a></li>
+                        <li><a href="<?php echo BASE_URL; ?>locations.php" class="nav-link <?php echo ($current_page ?? '') == 'locations' ? 'active' : ''; ?>">Locations</a></li>
                         <?php if (is_logged_in()): ?>
                             <li><a href="<?php echo BASE_URL; ?>auth/logout.php" class="nav-link">Logout</a></li>
                         <?php endif; ?>
