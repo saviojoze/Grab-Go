@@ -282,6 +282,24 @@
     cursor: pointer;
 }
 
+.user-profile-btn {
+    background: #FFFFFF !important;
+    padding: 6px 16px 6px 6px !important;
+    border-radius: 50px !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 1) !important;
+}
+
+.user-profile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
 .btn-secondary {
     background: rgba(255, 255, 255, 0.5) !important;
     color: #4318FF !important;
@@ -299,6 +317,7 @@
 .page-header h1 {
     background: linear-gradient(90deg, #1B2559 0%, #4318FF 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 800 !important;
     font-size: 2rem !important;
@@ -318,6 +337,12 @@
     height: 80px;
 }
 
+/* Fix: Remove white background from header actions wrapper */
+.admin-header-right {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
 .admin-logo {
     font-family: 'DM Sans', sans-serif;
     letter-spacing: 0.5px;
@@ -331,27 +356,13 @@
 
 .admin-logo svg {
     color: #4318FF;
-    filter: drop-shadow(0 0 8px rgba(67, 24, 255, 0.5));
-    width: 32px;
-    height: 32px;
-}
-
-.user-profile-btn {
-    background: #FFF !important;
-    padding: 4px !important;
-    border-radius: 50px !important;
+    background: linear-gradient(135deg, #4318FF 0%, #764EFF 100%) !important;
+    color: #FFF !important;
+    font-weight: 700;
+    font-size: 0.9rem !important;
     display: flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    min-width: 64px;
-    justify-content: flex-end;
-}
-
-.user-profile-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    justify-content: center;
 }
 
 .user-avatar {
@@ -365,14 +376,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 8px rgba(67, 24, 255, 0.3);
 }
 
 .user-name {
-    display: none !important;
+    display: block !important;
+    color: #1B2559 !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
 }
 
 .user-profile-btn svg {
-    display: none !important;
+    display: block !important;
+    color: #A3AED0 !important;
 }
 
 /* 8. Table Styling Final Polish */
@@ -402,6 +418,7 @@
     width: 100%;
     border-collapse: collapse;
 }
+
 /* 11. Verification Modal Styles */
 .verification-steps {
     display: flex;
@@ -428,7 +445,7 @@
     padding: 12px;
     background: #FFF;
     border-radius: 12px;
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
 }
 
@@ -509,11 +526,11 @@
     transition: all 0.2s ease;
 }
 
-.item-checkbox-wrapper:hover input ~ .checkmark {
+.item-checkbox-wrapper:hover input~.checkmark {
     border-color: #4318FF;
 }
 
-.item-checkbox-wrapper input:checked ~ .checkmark {
+.item-checkbox-wrapper input:checked~.checkmark {
     background-color: #4318FF;
     border-color: #4318FF;
 }
@@ -523,7 +540,7 @@
     transition: transform 0.2s ease;
 }
 
-.item-checkbox-wrapper input:checked ~ .checkmark svg {
+.item-checkbox-wrapper input:checked~.checkmark svg {
     transform: scale(1);
 }
 
@@ -538,3 +555,181 @@
     color: #A3AED0 !important;
 }
 
+/* ============================================
+   9. PREMIUM INTERACTIVE REDESIGN (GLASS GRID)
+   ============================================ */
+.order-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 1) !important;
+    padding: 24px;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.01),
+        0 10px 40px -10px rgba(112, 144, 176, 0.12);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.glass-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 30px 60px -12px rgba(67, 24, 255, 0.15);
+    border-color: rgba(67, 24, 255, 0.2) !important;
+}
+
+/* Live Pulse Animation */
+@keyframes pulseGlow {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(67, 24, 255, 0.4);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(67, 24, 255, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(67, 24, 255, 0);
+    }
+}
+
+.live-pulse {
+    width: 10px;
+    height: 10px;
+    background: #4318FF;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    animation: pulseGlow 2s infinite;
+}
+
+/* Card Header Section */
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.order-number-badge {
+    background: #F4F7FE;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    color: #1B2559;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+/* Card Progress Section */
+.order-progress-container {
+    margin: 10px 0;
+}
+
+.order-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.progress-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #A3AED0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.progress-label.active {
+    color: #4318FF;
+}
+
+.progress-track {
+    height: 6px;
+    background: #E0E5F2;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4318FF, #764EFF);
+    transition: width 1s ease;
+}
+
+/* Card Action Portal (Hover reveal) */
+.order-action-portal {
+    margin-top: auto;
+    display: flex;
+    gap: 12px;
+    transition: all 0.3s ease;
+}
+
+.action-btn-p {
+    flex: 1;
+    padding: 12px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-ready-p {
+    background: #E0FDF4;
+    color: #05CD99;
+}
+
+.btn-ready-p:hover {
+    background: #05CD99;
+    color: #FFF;
+    transform: translateY(-2px);
+}
+
+.btn-complete-p {
+    background: #E0E7FF;
+    color: #4318FF;
+}
+
+.btn-complete-p:hover {
+    background: #4318FF;
+    color: #FFF;
+    transform: translateY(-2px);
+}
+
+.btn-details-p {
+    background: #F4F7FE;
+    color: #1B2559;
+}
+
+.btn-details-p:hover {
+    background: #1B2559;
+    color: #FFF;
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .order-grid {
+        grid-template-columns: 1fr;
+    }
+}

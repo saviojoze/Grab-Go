@@ -80,7 +80,9 @@ require_once __DIR__ . '/../includes/header.php';
             <!-- decorative background -->
         </div>
         <div class="shop-hero-content container">
-            <h1 class="shop-title">GRAB & GO</h1>
+            <h1 class="shop-title animated-title">
+                <span>G</span><span>R</span><span>A</span><span>B</span><span>&nbsp;</span><span>&amp;</span><span>&nbsp;</span><span>G</span><span>O</span>
+            </h1>
            
             
             <form class="shop-search" action="" method="GET">
@@ -149,32 +151,66 @@ require_once __DIR__ . '/../includes/header.php';
         }
     </style>
 
+    <!-- Category Banners Section -->
+    <div class="category-banners-container container">
+        <div class="category-banners-grid">
+            <?php
+            $cat_icons = [
+                'Produce' => '🥬',
+                'Fruits' => '🍎',
+                'Vegetables' => '🥕',
+                'Dairy' => '🥛',
+                'Bakery' => '🍞',
+                'Meat' => '🥩',
+                'Soft Drinks' => '🥤',
+                'Drinks' => '🥤',
+                'Snacks' => '🍿',
+                'Juices' => '🍹',
+                'Cakes' => '🍰',
+                'Fresh Produce' => '🥬',
+                'Electronics' => '📺',
+                'Home Appliances' => '🧺',
+                'Beauty & Personal Care' => '🧴',
+                'Home & Kitchen' => '🍳',
+                'Automotive' => '🚗',
+                'Pet Supplies' => '🦴',
+                'Toys & Games' => '🎮',
+                'Beverages' => '☕'
+            ];
+            
+            // Reset categories pointer
+            $categories_result->data_seek(0);
+            ?>
+            
+            <a href="listing.php" class="cat-banner-item <?php echo empty($selected_categories) ? 'active' : ''; ?>">
+                <div class="cat-banner-platform" style="background-color: #E1F5FE;">
+                    <span class="cat-banner-emoji">🛍️</span>
+                </div>
+                <span class="cat-banner-label">All Products</span>
+            </a>
+
+            <?php while ($category = $categories_result->fetch_assoc()): ?>
+                <?php 
+                $isActive = in_array($category['id'], $selected_categories);
+                $linkUrl = $isActive ? 'listing.php' : 'listing.php?categories=' . $category['id'];
+                $emoji = $cat_icons[$category['name']] ?? '📦';
+                ?>
+                <a href="<?php echo $linkUrl; ?>" class="cat-banner-item <?php echo $isActive ? 'active' : ''; ?>">
+                    <div class="cat-banner-platform" style="background-color: #E1F5FE;">
+                        <span class="cat-banner-emoji"><?php echo $emoji; ?></span>
+                    </div>
+                    <span class="cat-banner-label"><?php echo htmlspecialchars($category['name']); ?></span>
+                </a>
+            <?php endwhile; ?>
+        </div>
+    </div>
+
     <div class="container shop-layout">
         <!-- Sidebar -->
         <aside class="shop-sidebar">
+            <!-- Filter section remains, but category nav moved to banners -->
             <div class="sidebar-section">
-                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; padding-left: 8px; color: #1c1c1c;">Category</h3>
-                <div class="category-nav">
-                    <a href="listing.php" class="category-link <?php echo empty($selected_categories) ? 'active' : ''; ?>">
-                        <div class="cat-icon-box">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                        </div>
-                        <span class="category-name">All Products</span>
-                        <span class="badge-count"><?php echo array_sum($category_counts); ?></span>
-                    </a>
-                    <?php while ($category = $categories_result->fetch_assoc()): ?>
-                        <?php 
-                        $isActive = in_array($category['id'], $selected_categories);
-                        $linkUrl = $isActive ? 'listing.php' : 'listing.php?categories=' . $category['id'];
-                        ?>
-                        <a href="<?php echo $linkUrl; ?>" class="category-link <?php echo $isActive ? 'active' : ''; ?>">
-                            <div class="cat-icon-box">
-                                <span style="color: #4A90E2; font-size: 14px;">◆</span>
-                            </div>
-                            <span class="category-name"><?php echo htmlspecialchars($category['name']); ?></span>
-                        </a>
-                    <?php endwhile; ?>
-                </div>
+                <!-- Additional filters can go here -->
             </div>
         </aside>
 

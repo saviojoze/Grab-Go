@@ -59,19 +59,90 @@ body {
 
 .shop-title {
     font-size: 6rem;
-    /* Massive typography */
     font-weight: 800;
     letter-spacing: -4px;
-    line-height: 1;
+    line-height: 1.2;
     color: var(--shop-text);
-    margin: 0;
-    /* Create the 'cutout' effect where text matches background if possible, 
-       but for now standard solid text looks good too. */
+    margin: 0 0 40px 0;
+    /* Add 40px space below heading */
+    opacity: 0.9;
+    display: flex;
+    justify-content: center;
+}
+
+/* Staggered Animation - Repeating every 5s */
+.animated-title span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: revealLetter 5s infinite;
+    /* Move gradient and clipping here */
     background: linear-gradient(180deg, #333 0%, #000 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    opacity: 0.9;
+    color: #000;
+    /* Fallback */
+}
+
+.animated-title span:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.animated-title span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.animated-title span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.animated-title span:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.animated-title span:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+/* Space */
+.animated-title span:nth-child(6) {
+    animation-delay: 0.6s;
+}
+
+/* & */
+.animated-title span:nth-child(7) {
+    animation-delay: 0.7s;
+}
+
+/* Space */
+.animated-title span:nth-child(8) {
+    animation-delay: 0.8s;
+}
+
+.animated-title span:nth-child(9) {
+    animation-delay: 0.9s;
+}
+
+@keyframes revealLetter {
+
+    0%,
+    10% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    20%,
+    80% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    90%,
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
 }
 
 .shop-subtitle {
@@ -127,82 +198,87 @@ body {
 }
 
 
-/* 2. Layout Grid */
-.shop-layout {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 40px;
-    padding-top: 20px;
+/* Category Banners Section */
+.category-banners-container {
+    margin-top: -30px;
+    margin-bottom: 40px;
+    z-index: 10;
+    position: relative;
+    background: #fff;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
 }
 
-/* 3. Sidebar */
-.shop-sidebar .sidebar-section h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 24px;
-    color: #1C1C1C;
-    padding-left: 8px;
+.category-banners-grid {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
 }
 
-.shop-sidebar .category-nav {
+.cat-banner-item {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-}
-
-.shop-sidebar .category-link {
-    display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 12px 16px;
     text-decoration: none;
-    color: #555;
-    border-radius: 12px;
-    /* Standard rounded look */
-    transition: all 0.2s ease;
-    font-size: 1rem;
-    font-weight: 500;
-    border: 1px solid transparent;
-    /* Prevent layout shift */
+    width: 90px;
+    transition: transform 0.2s ease;
 }
 
-.shop-sidebar .category-link:hover {
-    background-color: #FAFAFA;
-    color: #000;
+.cat-banner-item:hover {
+    transform: translateY(-5px);
 }
 
-.shop-sidebar .category-link.active {
-    background-color: #F5F5F7;
-    color: #000;
-    font-weight: 600;
-}
-
-.shop-sidebar .cat-icon-box {
-    width: 24px;
-    height: 24px;
+.cat-banner-platform {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
-    color: inherit;
-    flex-shrink: 0;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(24, 119, 242, 0.1);
+    border-bottom: 4px solid rgba(24, 119, 242, 0.2);
+    transition: all 0.2s ease;
 }
 
-.shop-sidebar .badge-count {
-    margin-left: auto;
-    background-color: transparent;
-    color: #1C1C1C;
-    padding: 4px 10px;
-    border-radius: 20px;
+.cat-banner-item.active .cat-banner-platform {
+    background-color: #1877F2 !important;
+    border-bottom-color: #0d47a1;
+}
+
+.cat-banner-emoji {
+    font-size: 2rem;
+}
+
+.cat-banner-item.active .cat-banner-emoji {
+    filter: brightness(0) invert(1);
+    /* If they were SVGs, but for emojis we just keep them */
+}
+
+.cat-banner-label {
     font-size: 0.85rem;
     font-weight: 600;
-    min-width: 24px;
+    color: #444;
     text-align: center;
+    margin-top: 4px;
 }
 
-.shop-sidebar .category-link.active .badge-count {
-    background-color: #000;
-    color: #FFF;
+.cat-banner-item.active .cat-banner-label {
+    color: #1877F2;
+}
+
+/* 2. Layout Grid Update */
+.shop-layout {
+    display: block;
+    /* Remove sidebar col for category focus */
+    padding-top: 0;
+}
+
+.shop-sidebar {
+    display: none;
+    /* Hide sidebar since we moved categories up */
 }
 
 

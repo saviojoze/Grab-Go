@@ -239,108 +239,119 @@ require_once 'sidebar.php';
             </form>
         </div>
         
-        <!-- Orders Table -->
-        <div class="table-card animate-slide-in stagger-2">
+        <!-- Orders Interactive Grid -->
+        <div class="animate-slide-in stagger-2">
             <?php if ($orders->num_rows > 0): ?>
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Order #</th>
-                                <th>Customer</th>
-                                <th>Pickup Date/Time</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($order = $orders->fetch_assoc()): ?>
-                                <?php 
-                                    $is_today = date('Y-m-d') === $order['pickup_date'];
-                                    $pickup_urgent = $is_today && $order['status'] !== 'completed' && $order['status'] !== 'cancelled';
-                                ?>
-                                <tr class="<?php echo $pickup_urgent ? 'urgent-row' : ''; ?>">
-                                    <td>
-                                        <strong><?php echo htmlspecialchars($order['order_number']); ?></strong>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <div class="customer-name"><?php echo htmlspecialchars($order['full_name']); ?></div>
-                                            <div class="text-secondary text-sm"><?php echo htmlspecialchars($order['email']); ?></div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <?php echo date('M d, Y', strtotime($order['pickup_date'])); ?>
-                                            <?php if ($is_today): ?>
-                                                <span class="badge" style="background:var(--color-primary); color:white; font-size:10px; margin-left:5px;">TODAY</span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="text-secondary text-sm"><?php echo date('h:i A', strtotime($order['pickup_time'])); ?></div>
-                                    </td>
-                                    <td><strong>₹<?php echo number_format($order['total'], 2); ?></strong></td>
-                                    <td>
-                                        <span class="status-badge status-<?php echo $order['status']; ?>">
-                                            <?php echo ucfirst($order['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            
-                                            <!-- Quick Action: Pending -> Ready -->
-                                            <?php if ($order['status'] === 'pending'): ?>
-                                                <form method="POST" style="display:inline;">
-                                                    <input type="hidden" name="update_status" value="1">
-                                                    <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                                    <input type="hidden" name="status" value="ready">
-                                                    <button type="submit" class="btn-icon" style="background-color: var(--color-success); color: white;" title="Mark as Ready">
-                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                            <polyline points="20 6 9 17 4 12"></polyline>
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                            <?php endif; ?>
+                <div class="order-grid">
+                    <?php while ($order = $orders->fetch_assoc()): ?>
+                        <?php 
+                            $is_today = date('Y-m-d') === $order['pickup_date'];
+                            $pickup_urgent = $is_today && $order['status'] !== 'completed' && $order['status'] !== 'cancelled';
+                            
+                            // Progress Calculation
+                            $progress = 0;
+                            if ($order['status'] === 'pending') $progress = 33;
+                            if ($order['status'] === 'ready') $progress = 66;
+                            if ($order['status'] === 'completed') $progress = 100;
+                        ?>
+                        <div class="glass-card animate-fade-up">
+                            <!-- Card Header -->
+                            <div class="card-top">
+                                <div class="order-number-badge">
+                                    <?php if ($order['status'] === 'pending'): ?>
+                                        <span class="live-pulse"></span>
+                                    <?php endif; ?>
+                                    #<?php echo htmlspecialchars($order['order_number']); ?>
+                                </div>
+                                <span class="status-badge status-<?php echo $order['status']; ?>">
+                                    <?php echo ucfirst($order['status']); ?>
+                                </span>
+                            </div>
 
-                                            <!-- Quick Action: Ready -> Completed -->
-                                            <?php if ($order['status'] === 'ready'): ?>
-                                                <button 
-                                                    type="button"
-                                                    class="btn-icon" 
-                                                    style="background-color: var(--color-primary); color: white;" 
-                                                    title="Verify & Complete"
-                                                    onclick="verifyCollection(<?php echo $order['id']; ?>, '<?php echo htmlspecialchars($order['order_number']); ?>', '<?php echo htmlspecialchars($order['full_name']); ?>')"
-                                                >
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                                    </svg>
-                                                </button>
-                                            <?php endif; ?>
+                            <!-- Customer Info -->
+                            <div class="customer-info">
+                                <h3 style="font-size: 1.1rem; color: #1B2559; margin-bottom: 4px;"><?php echo htmlspecialchars($order['full_name']); ?></h3>
+                                <p style="font-size: 0.85rem; color: #A3AED0;"><?php echo htmlspecialchars($order['email']); ?></p>
+                            </div>
 
-                                            <a href="order-details.php?id=<?php echo $order['id']; ?>" class="btn-icon" title="View Details">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                    <circle cx="12" cy="12" r="3"></circle>
-                                                </svg>
-                                            </a>
-                                            <button 
-                                                type="button"
-                                                class="btn-icon" 
-                                                onclick="updateStatus(<?php echo $order['id']; ?>, '<?php echo $order['status']; ?>')"
-                                                title="Edit Status"
-                                            >
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
+                            <!-- Pickup Details -->
+                            <div style="display: flex; gap: 16px; border-top: 1px solid #F4F7FE; padding-top: 16px;">
+                                <div>
+                                    <p style="font-size: 0.7rem; color: #A3AED0; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Pickup Date</p>
+                                    <p style="font-size: 0.9rem; font-weight: 600; color: #1B2559;">
+                                        <?php echo date('M d, Y', strtotime($order['pickup_date'])); ?>
+                                        <?php if ($is_today): ?>
+                                            <span style="color: #4318FF; font-size: 0.7rem; font-weight: 800;">(TODAY)</span>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                                <div style="border-left: 1px solid #F4F7FE; padding-left: 16px;">
+                                    <p style="font-size: 0.7rem; color: #A3AED0; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Time</p>
+                                    <p style="font-size: 0.9rem; font-weight: 600; color: #1B2559;"><?php echo date('h:i A', strtotime($order['pickup_time'])); ?></p>
+                                </div>
+                                <div style="margin-left: auto; text-align: right;">
+                                    <p style="font-size: 0.7rem; color: #A3AED0; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Total</p>
+                                    <p style="font-size: 1rem; font-weight: 800; color: #4318FF;">₹<?php echo number_format($order['total'], 2); ?></p>
+                                </div>
+                            </div>
+
+                            <!-- Journey Progress -->
+                            <div class="order-progress-container">
+                                <div class="order-progress-labels">
+                                    <span class="progress-label <?php echo $progress >= 33 ? 'active' : ''; ?>">Ordered</span>
+                                    <span class="progress-label <?php echo $progress >= 66 ? 'active' : ''; ?>">Ready</span>
+                                    <span class="progress-label <?php echo $progress >= 100 ? 'active' : ''; ?>">Collected</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill" style="width: <?php echo $progress; ?>%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Action Portal -->
+                            <div class="order-action-portal">
+                                <?php if ($order['status'] === 'pending'): ?>
+                                    <form method="POST" style="flex: 1;">
+                                        <input type="hidden" name="update_status" value="1">
+                                        <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                                        <input type="hidden" name="status" value="ready">
+                                        <button type="submit" class="action-btn-p btn-ready-p" title="Mark as Ready">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                            Mark Ready
+                                        </button>
+                                    </form>
+                                <?php elseif ($order['status'] === 'ready'): ?>
+                                    <button 
+                                        type="button"
+                                        class="action-btn-p btn-complete-p" 
+                                        onclick="verifyCollection(<?php echo $order['id']; ?>, '<?php echo htmlspecialchars($order['order_number']); ?>', '<?php echo htmlspecialchars($order['full_name']); ?>')"
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                        Complete
+                                    </button>
+                                <?php endif; ?>
+
+                                <a href="order-details.php?id=<?php echo $order['id']; ?>" class="action-btn-p btn-details-p" title="View Details">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    Details
+                                </a>
+                                
+                                <button type="button" class="btn-icon" style="background: #F4F7FE; border-radius: 12px; height: 100%;" onclick="updateStatus(<?php echo $order['id']; ?>, '<?php echo $order['status']; ?>')" title="Edit Status">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
                 </div>
             <?php else: ?>
                 <div class="empty-state">

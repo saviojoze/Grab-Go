@@ -39,7 +39,7 @@ if (is_logged_in()) {
 </head>
 <body>
     <header class="header">
-        <div class="container">
+        <div class="container-fluid">
             <div class="header-main flex items-center justify-between">
                 <!-- Logo -->
                 <a href="<?php echo BASE_URL; ?>products/listing.php" class="logo">
@@ -50,18 +50,6 @@ if (is_logged_in()) {
                     </svg>
                     <span>GRAB & GO</span>
                 </a>
-                
-                <!-- Navigation -->
-                <nav>
-                    <ul class="nav-menu">
-                        <li><a href="<?php echo BASE_URL; ?>products/listing.php" class="nav-link <?php echo ($current_page ?? '') == 'shop' ? 'active' : ''; ?>">Shop</a></li>
-                        <li><a href="<?php echo BASE_URL; ?>orders/my-orders.php" class="nav-link <?php echo ($current_page ?? '') == 'my-orders' ? 'active' : ''; ?>">My Orders</a></li>
-                        <li><a href="<?php echo BASE_URL; ?>locations.php" class="nav-link <?php echo ($current_page ?? '') == 'locations' ? 'active' : ''; ?>">Locations</a></li>
-                        <?php if (is_logged_in()): ?>
-                            <li><a href="<?php echo BASE_URL; ?>auth/logout.php" class="nav-link">Logout</a></li>
-                        <?php endif; ?>
-                    </ul>
-                </nav>
                 
                 <!-- Right Side Icons -->
                 <div class="header-actions flex items-center gap-lg">
@@ -79,17 +67,27 @@ if (is_logged_in()) {
                             </a>
                         </div>
                         
-                        <a href="<?php echo BASE_URL; ?>profile/view.php" class="user-profile-link">
-                            <div class="user-avatar-small">
-                                <?php if ($user_data && $user_data['profile_picture']): ?>
-                                    <img src="<?php echo BASE_URL . $user_data['profile_picture']; ?>" alt="Profile" class="avatar-img">
-                                <?php else: ?>
-                                    <div class="avatar-letter">
-                                        <?php echo strtoupper(substr($user_data['full_name'] ?? 'U', 0, 1)); ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </a>
+                        <div class="flex items-center gap-md">
+                            <a href="<?php echo BASE_URL; ?>profile/view.php" class="user-profile-link">
+                                <div class="user-avatar-small">
+                                    <?php if ($user_data && $user_data['profile_picture']): ?>
+                                        <img src="<?php echo BASE_URL . $user_data['profile_picture']; ?>" alt="Profile" class="avatar-img">
+                                    <?php else: ?>
+                                        <div class="avatar-letter">
+                                            <?php echo strtoupper(substr($user_data['full_name'] ?? 'U', 0, 1)); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </a>
+                            
+                            <a href="<?php echo BASE_URL; ?>auth/logout.php" class="logout-link" title="Logout">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white opacity-70 hover:opacity-100">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                            </a>
+                        </div>
                     <?php else: ?>
                         <a href="<?php echo BASE_URL; ?>auth/login.php" class="btn btn-primary">Sign In</a>
                     <?php endif; ?>
@@ -97,5 +95,18 @@ if (is_logged_in()) {
             </div>
         </div>
     </header>
+
+    <!-- Secondary Navigation Bar -->
+    <div class="secondary-nav">
+        <div class="container-fluid">
+            <nav class="flex justify-end">
+                <ul class="nav-menu">
+                    <li><a href="<?php echo BASE_URL; ?>products/listing.php" class="nav-link-secondary <?php echo ($current_page ?? '') == 'shop' ? 'active' : ''; ?>">Shop</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>orders/my-orders.php" class="nav-link-secondary <?php echo ($current_page ?? '') == 'my-orders' ? 'active' : ''; ?>">My Orders</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>locations.php" class="nav-link-secondary <?php echo ($current_page ?? '') == 'locations' ? 'active' : ''; ?>">Locations</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
     
     <main>

@@ -5,40 +5,58 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="logo mb-md">
-                        <div class="logo-icon"></div>
-                        <span>GRAB & GO</span>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        <span style="color: #FFFFFF;">GRAB & GO</span>
                     </div>
-                    <p class="text-secondary">
+                    <p class="footer-description mb-lg">
                         Your trusted supermarket for fresh produce and quality groceries. 
-                        Order online, pickup at your convenience.
+                        Experience the best online shopping with fast delivery and premium service.
                     </p>
+                    <div class="footer-social-links">
+                        <a href="#" class="social-icon" title="Facebook">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                        </a>
+                        <a href="#" class="social-icon" title="Twitter">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                        </a>
+                        <a href="#" class="social-icon" title="Instagram">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        </a>
+                        <a href="#" class="social-icon" title="LinkedIn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a>
+                    </div>
                 </div>
                 
                 <div class="footer-section">
-                    <h4>Quick Links</h4>
+                    <h4>Company</h4>
                     <ul class="footer-links">
-                        <li><a href="#">Help & Support</a></li>
+                        <li><a href="<?php echo BASE_URL; ?>products/listing.php">Our Shop</a></li>
                         <li><a href="#">About Us</a></li>
-                        <li><a href="#">Insights</a></li>
-                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Latest Insights</a></li>
+                        <li><a href="#">Terms & Conditions</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
-                    <h4>Help & Support</h4>
+                    <h4>Customer Care</h4>
                     <ul class="footer-links">
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">FAQs</a></li>
-                        <li><a href="#">Shipping Info</a></li>
-                        <li><a href="#">Returns</a></li>
+                        <li><a href="#">Contact Support</a></li>
+                        <li><a href="#">Track Orders</a></li>
+                        <li><a href="#">Shipping FAQ</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
                     </ul>
                 </div>
                 
-                <div class="footer-section">
+                <div class="footer-section footer-newsletter">
                     <h4>Newsletter</h4>
-                    <p class="text-secondary mb-md">Subscribe to get special offers and updates.</p>
+                    <p class="footer-description mb-lg">Stay updated with our latest offers and grocery tips.</p>
                     <form class="flex gap-sm">
-                        <input type="email" class="form-input" placeholder="Your email" style="flex: 1;">
+                        <input type="email" class="form-input" placeholder="Your email address" style="flex: 1;">
                         <button type="submit" class="btn btn-primary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>

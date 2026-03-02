@@ -464,6 +464,7 @@
    ============================================ */
 .admin-layout {
     display: flex;
+    flex-direction: column;
 }
 
 .admin-main {
