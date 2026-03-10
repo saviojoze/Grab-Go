@@ -2,12 +2,33 @@
 $page_title = 'Pay Online - Grab & Go';
 require_once __DIR__ . '/../config.php';
 
-if (!is_logged_in()) {
-    redirect('../auth/login.php');
-}
-
 $order_number = $_GET['order'] ?? '';
 $user_id = get_user_id();
+
+// Detect mobile app request (via user_id param) and set session
+if (isset($_GET['user_id'])) {
+    $mobile_user_id = (int)$_GET['user_id'];
+    
+    // Only fetch if session is missing or different
+    if (!$user_id || $user_id != $mobile_user_id) {
+        $u_stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
+        $u_stmt->bind_param("i", $mobile_user_id);
+        $u_stmt->execute();
+        $u_res = $u_stmt->get_result()->fetch_assoc();
+        
+        if ($u_res) {
+            $_SESSION['user_id'] = $u_res['id'];
+            $_SESSION['full_name'] = $u_res['full_name'];
+            $_SESSION['email'] = $u_res['email'];
+            $_SESSION['role'] = $u_res['role'];
+            $user_id = $u_res['id'];
+        }
+    }
+}
+
+if (!$user_id) {
+    redirect('../auth/login.php');
+}
 
 // Fetch order details
 $stmt = $conn->prepare("SELECT * FROM orders WHERE order_number = ? AND user_id = ?");
@@ -15,7 +36,8 @@ $stmt->bind_param("si", $order_number, $user_id);
 $stmt->execute();
 $order = $stmt->get_result()->fetch_assoc();
 
-if (!$order || $order['payment_method'] !== 'online') {
+if (!$order || ($order['payment_method'] !== 'online' && $order['payment_method'] !== 'card')) {
+    // Some older orders might have 'card' which we now call 'online'
     redirect('../orders/my-orders.php');
 }
 

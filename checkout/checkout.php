@@ -173,18 +173,8 @@ require_once __DIR__ . '/../includes/header.php';
                                     <line x1="12" y1="1" x2="12" y2="23"></line>
                                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                                 </svg>
-                                <span>Cash</span>
-                            </label>
-                        </div>
-                        
-                        <div class="payment-method">
-                            <input type="radio" name="payment_method" id="card" value="card">
-                            <label for="card">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                                    <line x1="1" y1="10" x2="23" y2="10"></line>
-                                </svg>
-                                <span>Card</span>
+                                <span>Cash on Pickup</span>
+                                <small style="display: block; text-align: center; color: var(--color-text-secondary); margin-top: 5px; font-size: 11px;">Pay at the store counter</small>
                             </label>
                         </div>
                         
@@ -192,10 +182,13 @@ require_once __DIR__ . '/../includes/header.php';
                             <input type="radio" name="payment_method" id="online" value="online">
                             <label for="online">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                                    <path d="M8 15h2"></path>
+                                    <path d="M14 15h2"></path>
                                 </svg>
-                                <span>Pay Online</span>
+                                <span>Online Payment</span>
+                                <small style="display: block; text-align: center; color: var(--color-text-secondary); margin-top: 5px; font-size: 11px;">Pay securely via Razorpay</small>
                             </label>
                         </div>
                     </div>
@@ -204,6 +197,13 @@ require_once __DIR__ . '/../includes/header.php';
                 <button type="submit" class="btn btn-primary btn-block btn-lg">
                     Place an Order →
                 </button>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; color: var(--color-text-secondary); font-size: 13px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Secure SSL Encrypted Transaction</span>
+                </div>
             </form>
             
             <!-- Order Summary -->

@@ -53,19 +53,28 @@ class RazorpayHelper {
     private function request($method, $url, $data = []) {
         $ch = curl_init();
         
+        $headers = [
+            'Content-Type: application/json'
+        ];
+        
         // Set basic auth
         curl_setopt($ch, CURLOPT_USERPWD, $this->keyId . ':' . $this->keySecret);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         
         if ($method === 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
 
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_URL, $url);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
+        if (curl_errno($ch)) {
+            error_log('Curl error: ' . curl_error($ch));
+        }
         
         curl_close($ch);
 
@@ -73,6 +82,7 @@ class RazorpayHelper {
             return json_decode($response, true);
         }
 
+        error_log('Razorpay API error: ' . $response);
         return false;
     }
 }

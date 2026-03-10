@@ -39,6 +39,14 @@
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
             <span>Orders</span>
+            <?php 
+                $pending_count = $conn->query("SELECT COUNT(*) as count FROM orders WHERE status = 'pending'")->fetch_assoc()['count'];
+                if ($pending_count > 0): 
+            ?>
+                <span class="badge badge-amber" style="margin-left: auto; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; background: #FFF3E0; color: #F57C00; font-weight: 700;">
+                    <?php echo $pending_count; ?>
+                </span>
+            <?php endif; ?>
         </a>
         
         <a href="customers.php" class="sidebar-item <?php echo ($current_page ?? '') == 'customers' ? 'active' : ''; ?>">

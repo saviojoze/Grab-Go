@@ -1,6 +1,6 @@
 <aside class="admin-sidebar" id="adminSidebar">
     <nav class="sidebar-nav">
-        <a href="index.php" class="sidebar-item <?php echo ($current_page === 'dashboard') ? 'active' : ''; ?>">
+        <a href="index.php" data-section="dashboard" class="sidebar-item <?php echo ($current_page === 'dashboard') ? 'active' : ''; ?>">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7"></rect>
                 <rect x="14" y="3" width="7" height="7"></rect>
@@ -10,7 +10,7 @@
             <span>Dashboard</span>
         </a>
 
-        <a href="products.php" class="sidebar-item <?php echo ($current_page === 'products') ? 'active' : ''; ?>">
+        <a href="products.php" data-section="products" class="sidebar-item <?php echo ($current_page === 'products') ? 'active' : ''; ?>">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                 <line x1="7" y1="7" x2="7.01" y2="7"></line>
@@ -18,7 +18,7 @@
             <span>Product Inventory</span>
         </a>
         
-        <a href="orders.php" class="sidebar-item <?php echo ($current_page === 'orders') ? 'active' : ''; ?>">
+        <a href="orders.php" data-section="orders" class="sidebar-item <?php echo ($current_page === 'orders') ? 'active' : ''; ?>">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
@@ -27,15 +27,7 @@
             <span>Order Management</span>
         </a>
 
-        <a href="verify-customer.php" class="sidebar-item <?php echo ($current_page === 'verification') ? 'active' : ''; ?>">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                <path d="m9 12 2 2 4-4"></path>
-            </svg>
-            <span>Customer Verification</span>
-        </a>
-
-        <a href="profile.php" class="sidebar-item <?php echo ($current_page === 'profile') ? 'active' : ''; ?>">
+        <a href="profile.php" data-section="profile" class="sidebar-item <?php echo ($current_page === 'profile') ? 'active' : ''; ?>">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -43,7 +35,7 @@
             <span>My Profile</span>
         </a>
 
-        <a href="my_leaves.php" class="sidebar-item <?php echo ($current_page === 'my_leaves') ? 'active' : ''; ?>">
+        <a href="my_leaves.php" data-section="leaves" class="sidebar-item <?php echo ($current_page === 'my_leaves') ? 'active' : ''; ?>">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -66,6 +58,29 @@
     </div>
 </aside>
 
+<style>
+/* ── Staff Sidebar: Admin-style design with unique section colors ── */
+
+.sidebar-item.active {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #FFF !important;
+    border-right: 4px solid #4318FF !important;
+    border-left: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.sidebar-item.active svg {
+    color: #4318FF !important;
+}
+
+/* Hover effects */
+.sidebar-item:not(.active):hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #FFF !important;
+}
+</style>
+
 <script>
 // Sidebar Toggle
 document.getElementById('sidebarToggle')?.addEventListener('click', function() {
@@ -75,7 +90,7 @@ document.getElementById('sidebarToggle')?.addEventListener('click', function() {
 // Profile Dropdown
 document.getElementById('userProfileBtn')?.addEventListener('click', function(e) {
     e.stopPropagation();
-    document.getElementById('userDropdownMenu').classList.toggle('show');
+    document.getElementById('userDropdownMenu')?.classList.toggle('show');
 });
 
 // Close dropdown on outside click

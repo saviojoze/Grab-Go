@@ -40,6 +40,7 @@ require_once __DIR__ . '/../includes/header.php';
                             case 'cancelled': $status_class = 'badge-danger'; break;
                         }
                         ?>
+                        <span class="badge <?php echo $status_class; ?>">
                             <?php echo ucfirst($order['status']); ?>
                         </span>
                         

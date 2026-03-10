@@ -9,6 +9,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
     $order_id = intval($_POST['order_id']);
     $new_status = sanitize_input($_POST['status']);
     
+    // Verify PIN if completing order
+    if ($new_status === 'completed') {
+        $entered_pin = sanitize_input($_POST['verification_pin'] ?? '');
+        
+        // Fetch the unique Delivery OTP for this specific order
+        $stmt_pin = $conn->prepare("SELECT delivery_otp FROM orders WHERE id = ?");
+        $stmt_pin->bind_param("i", $order_id);
+        $stmt_pin->execute();
+        $real_pin = $stmt_pin->get_result()->fetch_assoc()['delivery_otp'] ?? '';
+        
+        if ($entered_pin !== $real_pin) {
+            $_SESSION['error'] = 'Invalid Delivery OTP!';
+            redirect('orders.php');
+        }
+    }
+
     $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
     $stmt->bind_param("si", $new_status, $order_id);
     
@@ -221,16 +237,36 @@ require_once 'header.php';
                                     </td>
                                     <td>
                                         <div class="action-buttons">
-                                            <button 
+                                            <a 
+                                                href="order-details.php?id=<?php echo $order['id']; ?>"
                                                 class="btn-icon" 
-                                                onclick="viewOrder(<?php echo $order['id']; ?>)"
                                                 title="View Details"
                                             >
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                                 </svg>
-                                            </button>
+                                            </a>
+
+                                            <?php if ($order['status'] === 'pending'): ?>
+                                                <form method="POST" style="display:inline;">
+                                                    <input type="hidden" name="update_status" value="1">
+                                                    <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                                                    <input type="hidden" name="status" value="ready">
+                                                    <button type="submit" class="btn btn-sm btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                                        Mark Ready
+                                                    </button>
+                                                </form>
+                                            <?php elseif ($order['status'] === 'ready'): ?>
+                                                <button 
+                                                    class="btn btn-sm btn-success" 
+                                                    style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
+                                                    onclick="verifyCollection(<?php echo $order['id']; ?>, '<?php echo htmlspecialchars($order['order_number']); ?>', '<?php echo htmlspecialchars($order['full_name']); ?>')"
+                                                >
+                                                    Complete
+                                                </button>
+                                            <?php endif; ?>
+
                                             <button 
                                                 class="btn-icon" 
                                                 onclick="updateStatus(<?php echo $order['id']; ?>, '<?php echo $order['status']; ?>')"
@@ -293,6 +329,58 @@ require_once 'header.php';
         </form>
     </div>
 </div>
+
+<!-- Collection Verification Modal -->
+<div id="collectionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Verify Collection</h2>
+            <button class="modal-close" onclick="closeCollectionModal()">&times;</button>
+        </div>
+        <form method="POST" action="">
+            <input type="hidden" name="update_status" value="1">
+            <input type="hidden" name="order_id" id="collection_order_id">
+            <input type="hidden" name="status" value="completed">
+            
+            <div class="modal-body">
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 1.1rem; color: #1B2559; margin-bottom: 5px;">Order <span id="verify_order_num"></span></h3>
+                    <p style="color: #718096;">Customer: <span id="verify_customer" style="color: #2D3748; font-weight: 600;"></span></p>
+                </div>
+
+                <div class="verification-steps" style="text-align: center;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="margin: 0; color: #2d3748;">Secure Handoff</h4>
+                        <p style="font-size: 0.9rem; color: #718096; margin-top: 5px;">Enter the 6-digit Delivery OTP provided by the customer.</p>
+                    </div>
+
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 12px; border: 1px dashed #cbd5e0;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #4a5568; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px;">Delivery OTP</label>
+                        
+                        <div class="otp-container" style="display: flex; gap: 8px; justify-content: center;">
+                            <?php for($i=0; $i<6; $i++): ?>
+                            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric"
+                                   oninput="handleOtpInput(this, <?php echo $i; ?>)" 
+                                   onkeydown="handleOtpKey(this, event, <?php echo $i; ?>)"
+                                   style="width: 40px; height: 50px; font-size: 1.25rem; text-align: center; border: 2px solid #e2e8f0; border-radius: 8px; font-weight: 700; outline: none; background: white;">
+                            <?php endfor; ?>
+                        </div>
+                        <input type="hidden" name="verification_pin" id="final_pin" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCollectionModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Confirm & Complete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.otp-digit:focus { border-color: #667eea !important; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+</style>
 
 <style>
 .table-controls {
@@ -551,20 +639,55 @@ function updateStatus(orderId, currentStatus) {
     document.getElementById('statusModal').classList.add('active');
 }
 
+function verifyCollection(orderId, orderNum, customerName) {
+    document.getElementById('collection_order_id').value = orderId;
+    document.getElementById('verify_order_num').textContent = orderNum;
+    document.getElementById('verify_customer').textContent = customerName;
+    
+    // Reset OTP
+    const inputs = document.querySelectorAll('.otp-digit');
+    inputs.forEach(input => input.value = '');
+    document.getElementById('final_pin').value = '';
+    
+    document.getElementById('collectionModal').classList.add('active');
+    setTimeout(() => inputs[0].focus(), 100);
+}
+
+function handleOtpInput(input, index) {
+    if (input.value.length === 1) {
+        const next = document.querySelectorAll('.otp-digit')[index + 1];
+        if (next) next.focus();
+    }
+    updatePin();
+}
+
+function handleOtpKey(input, e, index) {
+    if (e.key === 'Backspace' && !input.value) {
+        const prev = document.querySelectorAll('.otp-digit')[index - 1];
+        if (prev) prev.focus();
+    }
+}
+
+function updatePin() {
+    let pin = '';
+    document.querySelectorAll('.otp-digit').forEach(i => pin += i.value);
+    document.getElementById('final_pin').value = pin;
+}
+
 function closeModal() {
     document.getElementById('statusModal').classList.remove('active');
 }
 
-function viewOrder(orderId) {
-    window.location.href = 'order-details.php?id=' + orderId;
+function closeCollectionModal() {
+    document.getElementById('collectionModal').classList.remove('active');
 }
 
-// Close modal on outside click
-document.getElementById('statusModal')?.addEventListener('click', function(e) {
-    if (e.target === this) {
+window.onclick = function(e) {
+    if (e.target.classList.contains('modal')) {
         closeModal();
+        closeCollectionModal();
     }
-});
+}
 </script>
 
 <?php require_once 'footer.php'; ?>

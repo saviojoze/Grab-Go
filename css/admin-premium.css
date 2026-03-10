@@ -337,10 +337,30 @@
     height: 80px;
 }
 
-/* Fix: Remove white background from header actions wrapper */
+/* Fix: Remove white background from header actions wrapper (admin panel only) */
 .admin-header-right {
     background: transparent !important;
     box-shadow: none !important;
+}
+
+/* Staff portal: restore white pill — higher specificity double-class selector wins */
+.admin-header-right.staff-header-right {
+    background: #FFF !important;
+    box-shadow: 0px 18px 40px rgba(112, 144, 176, 0.12) !important;
+    border-radius: 30px !important;
+    padding: 6px 14px !important;
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+/* Inside staff pill: remove inner white background from profile button */
+.admin-header-right.staff-header-right .user-profile-btn {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
 }
 
 .admin-logo {
@@ -355,14 +375,9 @@
 }
 
 .admin-logo svg {
-    color: #4318FF;
-    background: linear-gradient(135deg, #4318FF 0%, #764EFF 100%) !important;
-    color: #FFF !important;
-    font-weight: 700;
-    font-size: 0.9rem !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: #4318FF !important;
+    background: transparent !important;
+    flex-shrink: 0;
 }
 
 .user-avatar {

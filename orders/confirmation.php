@@ -136,8 +136,11 @@ require_once __DIR__ . '/../includes/header.php';
                         </svg>
                         Print Proof
                     </button>
-                    <a href="../orders/my-orders.php" class="btn btn-secondary">
-                        See Order
+                    <a href="../index.php" class="btn btn-secondary">
+                        Return to Home
+                    </a>
+                    <a href="../orders/my-orders.php" class="btn btn-primary-alt" style="background: #e1f5fe; color: #1565c0; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                        My Orders
                     </a>
                 </div>
             </div>

@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['add_staff']) || isse
         $name = trim(sanitize_input($_POST['full_name']));
         $position = trim(sanitize_input($_POST['position']));
         $email = trim(sanitize_input($_POST['email']));
+        $password = $_POST['password'] ?? '';
         
         if (empty($position)) $position = "Staff"; // Default
 
@@ -24,9 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['add_staff']) || isse
                 // 2. Create User Account (role='staff')
                 $conn->begin_transaction();
                 
-                $random_pass = password_hash(bin2hex(random_bytes(8)), PASSWORD_DEFAULT);
+                $pass_hash = password_hash($password, PASSWORD_DEFAULT);
                 $stmt_user = $conn->prepare("INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, 'staff')");
-                $stmt_user->bind_param("sss", $name, $email, $random_pass);
+                $stmt_user->bind_param("sss", $name, $email, $pass_hash);
                 
                 if ($stmt_user->execute()) {
                     // 3. Add to Staff Directory
@@ -189,7 +190,7 @@ while ($row = $res->fetch_assoc()) {
     
     .add-staff-form {
         display: grid;
-        grid-template-columns: 1.5fr 1.5fr 1fr auto;
+        grid-template-columns: 1fr 1fr 1fr 1fr auto;
         gap: 20px;
         align-items: flex-end;
         margin-top: 20px;
@@ -264,6 +265,16 @@ while ($row = $res->fetch_assoc()) {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                         </span>
                         <input type="text" name="position" class="form-input" placeholder="e.g. Cashier" style="padding-left: 48px; height: 48px;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="font-size: 0.9rem;">Password</label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 16px; top: 12px; color: #A3AED0;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </span>
+                        <input type="password" name="password" class="form-input" placeholder="••••••••" style="padding-left: 48px; height: 48px;" required>
                     </div>
                 </div>
                 <button type="submit" name="add_staff" class="btn btn-primary btn-add" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 24px;">

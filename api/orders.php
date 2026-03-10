@@ -11,9 +11,30 @@ if (!$user_id) {
 
 switch ($method) {
     case 'GET':
-        $query = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("i", $user_id);
+        // Check user role
+        $role_stmt = $conn->prepare("SELECT role FROM users WHERE id = ?");
+        $role_stmt->bind_param("i", $user_id);
+        $role_stmt->execute();
+        $user_role = $role_stmt->get_result()->fetch_assoc()['role'] ?? 'customer';
+
+        if ($user_role === 'staff' || $user_role === 'admin') {
+            // Staff can see all orders OR filtered by status
+            $status = $_GET['status'] ?? null;
+            if ($status) {
+                $query = "SELECT o.*, u.full_name as customer_name FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE o.status = ? ORDER BY o.created_at DESC";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param("s", $status);
+            } else {
+                $query = "SELECT o.*, u.full_name as customer_name FROM orders o LEFT JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC";
+                $stmt = $conn->prepare($query);
+            }
+        } else {
+            // Customer can only see their own orders
+            $query = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("i", $user_id);
+        }
+
         $stmt->execute();
         $result = $stmt->get_result();
         $orders = [];
@@ -73,10 +94,29 @@ switch ($method) {
             }
 
             $total = $subtotal; // Add tax, delivery etc if needed
+            $discount = 0;
+            $delivery_fee = 0;
+            $delivery_otp = sprintf("%06d", mt_rand(100000, 999999));
 
-            // 2. Insert Order
-            $order_stmt = $conn->prepare("INSERT INTO orders (order_number, user_id, pickup_date, pickup_time, contact_name, contact_email, contact_phone, payment_method, subtotal, total, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')");
-            $order_stmt->bind_param("sissssssdd", $order_number, $user_id, $pickup_date, $pickup_time, $contact_name, $contact_email, $contact_phone, $payment_method, $subtotal, $total);
+            // Razorpay logic for online payment
+            $razorpay_order_id = null;
+            $payment_status = 'pending';
+
+            if ($payment_method === 'online') {
+                require_once __DIR__ . '/../includes/RazorpayHelper.php';
+                $razorpay = new RazorpayHelper();
+                $rzp_order = $razorpay->createOrder($total, $order_number);
+                
+                if ($rzp_order && isset($rzp_order['id'])) {
+                    $razorpay_order_id = $rzp_order['id'];
+                } else {
+                    throw new Exception('Failed to create Razorpay order. Please check Razorpay configuration.');
+                }
+            }
+
+            // 2. Insert Order (Updated with more fields including delivery_otp)
+            $order_stmt = $conn->prepare("INSERT INTO orders (order_number, user_id, pickup_date, pickup_time, contact_name, contact_email, contact_phone, payment_method, subtotal, discount, delivery_fee, total, status, delivery_otp, payment_status, razorpay_order_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)");
+            $order_stmt->bind_param("sissssssddddsss", $order_number, $user_id, $pickup_date, $pickup_time, $contact_name, $contact_email, $contact_phone, $payment_method, $subtotal, $discount, $delivery_fee, $total, $delivery_otp, $payment_status, $razorpay_order_id);
             $order_stmt->execute();
             $order_id = $conn->insert_id;
 
@@ -93,11 +133,60 @@ switch ($method) {
             $clear_cart->execute();
 
             $conn->commit();
-            send_success(['order_id' => $order_id, 'order_number' => $order_number], 'Order placed successfully');
+            send_success([
+                'order_id' => $order_id, 
+                'order_number' => $order_number,
+                'delivery_otp' => $delivery_otp,
+                'razorpay_order_id' => $razorpay_order_id,
+                'total' => $total
+            ], 'Order placed successfully');
 
         } catch (Exception $e) {
             $conn->rollback();
             send_error('Failed to place order: ' . $e->getMessage());
+        }
+        break;
+
+    case 'PUT':
+        // Update order status (Staff only)
+        $input = get_json_input();
+        $order_id = $input['order_id'] ?? null;
+        $new_status = $input['status'] ?? null;
+        $verification_pin = $input['verification_pin'] ?? null;
+
+        if (!$order_id || !$new_status) {
+            send_error('Order ID and status are required');
+        }
+
+        // Check if user is staff
+        $role_stmt = $conn->prepare("SELECT role FROM users WHERE id = ?");
+        $role_stmt->bind_param("i", $user_id);
+        $role_stmt->execute();
+        $user_role = $role_stmt->get_result()->fetch_assoc()['role'] ?? 'customer';
+
+        if ($user_role !== 'staff' && $user_role !== 'admin') {
+            send_error('Unauthorized. Staff only.');
+        }
+
+        // Verify OTP if completing
+        if ($new_status === 'completed') {
+            $stmt_pin = $conn->prepare("SELECT delivery_otp FROM orders WHERE id = ?");
+            $stmt_pin->bind_param("i", $order_id);
+            $stmt_pin->execute();
+            $real_pin = $stmt_pin->get_result()->fetch_assoc()['delivery_otp'] ?? '';
+            
+            if ($verification_pin !== $real_pin) {
+                send_error('Invalid Delivery OTP!');
+            }
+        }
+
+        $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        $stmt->bind_param("si", $new_status, $order_id);
+        
+        if ($stmt->execute()) {
+            send_success(null, 'Order status updated successfully');
+        } else {
+            send_error('Failed to update order status');
         }
         break;
 
