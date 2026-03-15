@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    background-color: white;
+    padding: 20px;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11.5pt;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    border: 1px solid black;
+  }
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+  }
+  .bold { font-weight: bold; }
+  .center { text-align: center; }
+</style>
+</head>
+<body>
+<table>
+  <tbody>
+    <tr>
+      <td colspan="6"><span class="bold">Project Name:</span> Grab-Go</td>
+    </tr>
+    <tr>
+      <td colspan="6" class="center bold">Customer Search Test Case</td>
+    </tr>
+    <tr>
+      <td colspan="3"><span class="bold">Test Case ID:</span> TC_Customer_Search_01<br><br><span class="bold">Test Priority(Low/Medium/High):</span> High</td>
+      <td colspan="3"><span class="bold">Test Designed By:</span> Savio Jose <br><br><span class="bold">Test Designed Date:</span> 2026-03-15</td>
+    </tr>
+    <tr>
+      <td colspan="3"><span class="bold">Module Name:</span> Admin - Customers<br><br><span class="bold">Test Title :</span> Verify existing customer search functionality</td>
+      <td colspan="3"><span class="bold">Test Executed By :</span> Automated Script (Selenium)<br><br><span class="bold">Test Execution Date:</span> 2026-03-15</td>
+    </tr>
+    <tr>
+      <td colspan="6"><span class="bold">Description:</span> To verify that an admin user can successfully search for a specific existing customer ("Abner sam") using the search functionality on the Customers management page.</td>
+    </tr>
+    <tr>
+      <td colspan="6"><span class="bold">Pre-Condition :</span> <br>User has valid username and password (<code>admin@grabandgo.com</code> / <code>admin123</code>)<br>Google Chrome and ChromeDriver are installed.<br>Target customer ("Abner sam") exists in the database.</td>
+    </tr>
+    <tr class="bold">
+      <td style="width: 5%;">Step</td>
+      <td style="width: 25%;">Test Step</td>
+      <td style="width: 20%;">Test Data</td>
+      <td style="width: 20%;">Expected Result</td>
+      <td style="width: 20%;">Actual Result</td>
+      <td style="width: 10%;">Status(Pass/<br>Fail)</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Launch browser & Navigate to Login URL</td>
+      <td>URL: <code>/auth/login.php</code></td>
+      <td>Login page should load and email field should become visible.</td>
+      <td>Login page loaded successfully.</td>
+      <td>Pass</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Enter Admin Credentials</td>
+      <td>Email: <code>admin@grabandgo.com</code><br>Pass: <code>admin123</code></td>
+      <td>Credentials should be entered in their respective input fields.</td>
+      <td>Credentials entered successfully.</td>
+      <td>Pass</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Click Login Button</td>
+      <td>Element ID: <code>submitBtn</code></td>
+      <td>User should be authenticated and redirected to the Admin Dashboard.</td>
+      <td>Redirected to Admin Dashboard successfully.</td>
+      <td>Pass</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Navigate to Customers Page</td>
+      <td>URL: <code>/admin/customers.php</code></td>
+      <td>The Customers management page should load correctly.</td>
+      <td>Customers page loaded successfully.</td>
+      <td>Pass</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Enter Customer Name in Search Field</td>
+      <td>Element Name: <code>search</code><br>Query: <code>Abner sam</code></td>
+      <td>Search input box should be cleared and populated with the query.</td>
+      <td>Search query populated correctly.</td>
+      <td>Pass</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Submit Search Query</td>
+      <td>Key: <code>RETURN</code> (Enter)</td>
+      <td>Page should reload/update the table based on the search inputs.</td>
+      <td>Page reloaded with the correct search parameters.</td>
+      <td>Pass</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Verify Customer in Results</td>
+      <td>Target: <code>&lt;h4&gt;</code> containing text <code>Abner sam</code></td>
+      <td>The searched customer name should be visible in the table results.</td>
+      <td>Customer "Abner sam" found.</td>
+      <td>Pass</td>
+    </tr>
+    <tr>
+      <td colspan="6"><span class="bold">Post-Condition:</span> Browser driver is quit and closed gracefully after waiting 5 seconds.</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

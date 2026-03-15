@@ -4,6 +4,24 @@ require_once __DIR__ . '/../config.php';
 // Detect role for styling
 $role = $_GET['role'] ?? 'customer';
 $theme_class = 'theme-' . $role;
+
+// Handle query string messages
+$success_msg = '';
+$error_msg = '';
+if (isset($_GET['success'])) {
+    if ($_GET['success'] === 'password_reset') {
+        $success_msg = 'Password reset successful! You can now log in with your new password.';
+    } elseif ($_GET['success'] === 'registered') {
+        $success_msg = 'Account created successfully! Please log in.';
+    }
+}
+if (isset($_GET['error'])) {
+    if ($_GET['error'] === 'invalid') {
+        $error_msg = 'Invalid email or password. Please try again.';
+    } elseif ($_GET['error'] === 'required') {
+        $error_msg = 'Please fill in all required fields.';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -162,8 +180,8 @@ $theme_class = 'theme-' . $role;
                         <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
                     </div>
                     
-                    <div id="errorMessage" class="alert alert-error" style="display: none;"></div>
-                    <div id="successMessage" class="alert alert-success" style="display: none;"></div>
+                    <div id="errorMessage" class="alert alert-error" <?php echo $error_msg ? '' : 'style="display: none;"'; ?>><?php echo htmlspecialchars($error_msg); ?></div>
+                    <div id="successMessage" class="alert alert-success" <?php echo $success_msg ? '' : 'style="display: none;"'; ?>><?php echo htmlspecialchars($success_msg); ?></div>
                     
                     <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg">
                         Sign In

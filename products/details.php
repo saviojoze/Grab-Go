@@ -19,238 +19,528 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    redirect('listing.php'); // Or show 404
+    redirect('listing.php');
 }
 
 $product = $result->fetch_assoc();
 $page_title = htmlspecialchars($product['name']) . ' - Grab & Go';
 $current_page = 'shop';
 
-// Process images (simulated gallery)
+// Process images
 $imgUrl = $product['image_url'] ?? 'images/placeholder.jpg';
 if (strpos($imgUrl, 'http') !== 0) {
     $base = defined('BASE_URL') ? BASE_URL : '../';
     $imgUrl = $base . $imgUrl;
 }
 
+// Fetch related products
+$category_id = (int)$product['category_id'];
+$related_stmt = $conn->prepare("SELECT * FROM products WHERE category_id = ? AND id != ? LIMIT 4");
+$related_stmt->bind_param("ii", $category_id, $product_id);
+$related_stmt->execute();
+$related_result = $related_stmt->get_result();
+
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-/* Flipkart-style Specific CSS */
-.fp-container { background-color: #F1F3F6; min-height: 100vh; padding-top: 20px; padding-bottom: 40px; }
-.fp-card { background: #fff; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; overflow: hidden; }
-.fp-left-col { width: 40%; padding: 16px; position: relative; border-right: 1px solid #f0f0f0; min-height: 500px; display: flex; flex-direction: column; }
-.fp-right-col { width: 60%; padding: 24px; padding-left: 24px; }
-.fp-gallery { display: flex; height: 100%; gap: 10px; }
-.fp-thumbnails { width: 64px; display: flex; flex-direction: column; gap: 8px; }
-.fp-thumb { width: 64px; height: 64px; border: 1px solid #f0f0f0; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; }
-.fp-thumb.active { border: 2px solid #2874f0; }
-.fp-thumb img { max-width: 100%; max-height: 100%; }
-.fp-main-img-box { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid #f0f0f0; height: 416px; }
-.fp-main-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.2s ease; cursor: crosshair; }
-.fp-main-img:hover { transform: scale(1.1); } 
+:root {
+    --primary: #1877F2;
+    --secondary: #00D563;
+    --accent-red: #E21E26;
+    --text-main: #2D3134;
+    --text-muted: #7E7E7E;
+    --border-light: #EEEEEE;
+    --bg-light: #F8F9FA;
+}
 
-.fp-buttons { display: flex; gap: 12px; margin-top: 20px; }
-.fp-btn { flex: 1; padding: 16px 8px; font-weight: 700; font-size: 16px; color: #fff; text-transform: uppercase; border: none; border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-.fp-btn-cart { background: #FF9F00; }
-.fp-btn-buy { background: #FB641B; }
-.fp-btn svg { width: 18px; height: 18px; fill: white; }
+.details-page {
+    font-family: 'Outfit', sans-serif;
+    background: #fff;
+    padding-bottom: 60px;
+}
 
-.fp-title { font-size: 18px; color: #212121; line-height: 1.4; margin-bottom: 8px; }
-.fp-rating-badge { background: #388E3C; color: #fff; padding: 2px 6px; font-size: 12px; font-weight: 700; border-radius: 3px; display: inline-flex; align-items: center; gap: 2px; margin-right: 8px; vertical-align: middle; }
-.fp-rating-text { color: #878787; font-weight: 500; font-size: 14px; margin-left: 8px; }
-.fp-price-row { display: flex; align-items: baseline; gap: 12px; margin: 12px 0; }
-.fp-price { font-size: 28px; font-weight: 500; color: #212121; }
-.fp-original-price { font-size: 16px; color: #878787; text-decoration: line-through; }
-.fp-discount { color: #388E3C; font-weight: 700; font-size: 16px; }
+.breadcrumb-nav {
+    padding: 20px 0;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+.breadcrumb-nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+.breadcrumb-nav a:hover { color: var(--primary); }
+.breadcrumb-nav span { margin: 0 8px; color: #ccc; }
+.breadcrumb-nav .active { color: var(--accent-red); font-weight: 500; }
 
-.fp-section-title { font-size: 16px; font-weight: 500; color: #212121; margin-bottom: 12px; margin-top: 24px; }
-.fp-offers-list { list-style: none; padding: 0; margin-bottom: 24px; }
-.fp-offer-item { display: flex; gap: 10px; font-size: 14px; color: #212121; margin-bottom: 8px; align-items: flex-start; }
-.fp-tag-icon { color: #388E3C; font-weight: 700; font-size: 12px; margin-top: 2px; }
+.product-main-info {
+    display: flex;
+    gap: 50px;
+    margin-bottom: 50px;
+}
 
-.fp-pincode-box { display: flex; border-bottom: 2px solid #2874f0; width: 250px; padding: 4px 0; margin-bottom: 8px; }
-.fp-pincode-input { border: none; outline: none; font-size: 14px; font-weight: 500; flex: 1; padding: 4px; }
-.fp-check-btn { color: #2874f0; font-weight: 700; font-size: 13px; cursor: pointer; background: none; border: none; }
+/* Image Section */
+.product-gallery {
+    flex: 0 0 45%;
+}
+.main-img-wrap {
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    position: relative;
+}
+.main-img-wrap img {
+    max-width: 100%;
+    max-height: 400px;
+    transition: transform 0.3s ease;
+}
+.thumb-row {
+    display: flex;
+    gap: 12px;
+}
+.thumb-box {
+    width: 80px;
+    height: 80px;
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s;
+}
+.thumb-box:hover, .thumb-box.active {
+    border-color: var(--primary);
+}
+.thumb-box img {
+    max-width: 100%;
+    max-height: 100%;
+}
 
-.fp-specs-table { border: 1px solid #E0E0E0; border-radius: 2px; width: 100%; max-width: 600px; border-collapse: collapse; margin-top: 10px; }
-.fp-specs-table td { padding: 12px; font-size: 14px; border-bottom: 1px solid #F0F0F0; }
-.fp-specs-label { color: #878787; width: 30%; }
-.fp-specs-value { color: #212121; }
+/* Info Section */
+.product-info-col {
+    flex: 1;
+}
+.product-category-tree {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+.product-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 15px 0;
+}
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.star-rating { color: #FFC107; font-size: 14px; }
+.review-count { color: var(--text-muted); font-size: 13px; }
 
-.fp-desc { color: #212121; font-size: 14px; line-height: 1.5; margin-top: 8px; }
+.product-price {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-red);
+    margin-bottom: 25px;
+}
 
-/* Responsive */
-@media (max-width: 768px) {
-    .fp-card { flex-direction: column; }
-    .fp-left-col, .fp-right-col { width: 100%; border-right: none; }
-    .fp-main-img-box { height: 300px; }
+.product-short-desc {
+    color: #666;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.atc-form {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--border-light);
+}
+.qty-input-wrap {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.qty-btn {
+    background: #f4f4f4;
+    border: none;
+    width: 36px;
+    height: 44px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+}
+.qty-val {
+    width: 50px;
+    height: 44px;
+    border: none;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    text-align: center;
+    font-weight: 600;
+}
+.btn-atc {
+    background: #333;
+    color: #fff;
+    border: none;
+    padding: 0 35px;
+    height: 44px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-atc:hover { background: var(--primary); }
+
+.wishlist-compare {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.wc-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #333;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+}
+.wc-link:hover { color: var(--primary); }
+
+.meta-info {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+.meta-row { margin-bottom: 8px; }
+.meta-label { color: var(--text-main); font-weight: 600; min-width: 80px; display: inline-block; }
+
+/* Tabs */
+.tabs-section {
+    margin-top: 40px;
+    border-top: 1px solid var(--border-light);
+}
+.tab-headers {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: -1px;
+}
+.tab-btn {
+    padding: 15px 10px;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    border-top: 3px solid transparent;
+    cursor: pointer;
+}
+.tab-btn.active {
+    color: var(--accent-red);
+    border-top-color: var(--accent-red);
+}
+.tab-content {
+    padding: 40px 0;
+    color: #666;
+    line-height: 1.7;
+}
+
+/* Related */
+.related-section {
+    margin-top: 60px;
+}
+.section-title-center {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 40px;
+    position: relative;
+}
+.section-title-center::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: var(--accent-red);
+    margin: 15px auto 0;
+}
+
+.related-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+.rel-card {
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+}
+.rel-card:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+.rel-img {
+    height: 200px;
+    background: #f9f9f9;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.rel-img img { max-width: 100%; max-height: 100%; transition: transform 0.3s; }
+.rel-card:hover .rel-img img { transform: scale(1.05); }
+.rel-body { padding: 15px; text-align: center; }
+.rel-cat { color: #999; font-size: 12px; text-transform: uppercase; display: block; margin-bottom: 5px; }
+.rel-name { font-weight: 600; font-size: 15px; color: #333; margin: 0 0 8px 0; text-decoration: none; display: block; }
+.rel-price { color: var(--accent-red); font-weight: 700; }
+
+@media (max-width: 992px) {
+    .product-main-info { flex-direction: column; gap: 30px; }
+    .product-gallery { flex: 1; }
+    .related-grid { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 
-<div class="fp-container">
+<div class="details-page">
     <div class="container">
         <!-- Breadcrumbs -->
-        <div style="font-size: 12px; color: #878787; margin-bottom: 10px;">
-            <a href="../index.php" style="color: #878787; text-decoration: none;">Home</a>  
-            <span style="margin: 0 5px;">›</span>
-            <a href="listing.php" style="color: #878787; text-decoration: none;">Shop</a>
-            <span style="margin: 0 5px;">›</span>
-            <span><?php echo htmlspecialchars($product['category_name']); ?></span>
-            <span style="margin: 0 5px;">›</span>
-            <span style="color: #212121;"><?php echo htmlspecialchars($product['name']); ?></span>
-        </div>
+        <nav class="breadcrumb-nav">
+            <a href="../index.php">Home</a>
+            <span>/</span>
+            <a href="listing.php">Shop</a>
+            <span>/</span>
+            <a href="listing.php?categories=<?php echo $product['category_id']; ?>"><?php echo htmlspecialchars($product['category_name']); ?></a>
+            <span>/</span>
+            <span class="active"><?php echo htmlspecialchars($product['name']); ?></span>
+        </nav>
 
-        <div class="fp-card">
-            <!-- Left Column: Gallery & Buttons -->
-            <div class="fp-left-col">
-                <div class="fp-gallery">
-                    <div class="fp-thumbnails">
-                        <div class="fp-thumb active" onmouseover="changeImage('<?php echo htmlspecialchars($imgUrl); ?>')">
-                            <img src="<?php echo htmlspecialchars($imgUrl); ?>">
-                        </div>
-                        <!-- Simulated Thumbnails -->
-                        <div class="fp-thumb" onmouseover="changeImage('<?php echo htmlspecialchars($imgUrl); ?>')">
-                            <img src="<?php echo htmlspecialchars($imgUrl); ?>" style="filter: hue-rotate(45deg);">
-                        </div>
-                         <div class="fp-thumb" onmouseover="changeImage('<?php echo htmlspecialchars($imgUrl); ?>')">
-                            <img src="<?php echo htmlspecialchars($imgUrl); ?>" style="filter: hue-rotate(90deg);">
-                        </div>
+        <!-- Product Main Container -->
+        <div class="product-main-info">
+            <!-- Gallery -->
+            <div class="product-gallery">
+                <div class="main-img-wrap">
+                    <img id="main-product-image" src="<?php echo htmlspecialchars($imgUrl); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                </div>
+                <div class="thumb-row">
+                    <div class="thumb-box active" onclick="updateMainImg('<?php echo htmlspecialchars($imgUrl); ?>', this)">
+                        <img src="<?php echo htmlspecialchars($imgUrl); ?>">
                     </div>
-                    <div class="fp-main-img-box">
-                        <div style="position: absolute; top: 10px; right: 10px; z-index: 10;">
-                             <button style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #f0f0f0; background: #fff; cursor: pointer; color: #c2c2c2; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                             </button>
-                        </div>
-                        <img id="mainProductImg" src="<?php echo htmlspecialchars($imgUrl); ?>" class="fp-main-img" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                    <!-- Dummy thumbs -->
+                    <div class="thumb-box" onclick="updateMainImg('<?php echo htmlspecialchars($imgUrl); ?>', this)">
+                        <img src="<?php echo htmlspecialchars($imgUrl); ?>" style="filter: brightness(0.9) contrast(1.1);">
+                    </div>
+                    <div class="thumb-box" onclick="updateMainImg('<?php echo htmlspecialchars($imgUrl); ?>', this)">
+                        <img src="<?php echo htmlspecialchars($imgUrl); ?>" style="filter: sepia(0.3);">
                     </div>
                 </div>
+            </div>
 
-                <div class="fp-buttons">
-                    <button class="fp-btn fp-btn-cart add-to-cart-btn" data-product-id="<?php echo $product['id']; ?>">
-                        <svg viewBox="0 0 16 16"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+            <!-- Info -->
+            <div class="product-info-col">
+                <div class="product-category-tree">
+                    <?php echo htmlspecialchars($product['category_name']); ?>
+                </div>
+                <h1 class="product-title"><?php echo htmlspecialchars($product['name']); ?></h1>
+                
+                <div class="product-rating">
+                    <div class="star-rating">
+                        ★★★★★
+                    </div>
+                    <div class="review-count">(1 customer review)</div>
+                </div>
+
+                <div class="product-price">
+                    ₹<?php echo number_format($product['price'], 2); ?>
+                </div>
+
+                <div class="product-short-desc">
+                    <?php 
+                        $short_desc = !empty($product['description']) ? mb_strimwidth($product['description'], 0, 200, '...') : 'Experience premium quality with this selection from Grab & Go. Carefully curated for our customers.';
+                        echo nl2br(htmlspecialchars($short_desc)); 
+                    ?>
+                </div>
+
+                <!-- ATC Form -->
+                <div class="atc-form">
+                    <div class="qty-input-wrap">
+                        <button class="qty-btn" type="button" onclick="changeQty(-1)">-</button>
+                        <input type="text" id="product-qty" class="qty-val" value="1" readonly>
+                        <button class="qty-btn" type="button" onclick="changeQty(1)">+</button>
+                    </div>
+                    <button class="btn-atc add-to-cart-btn" data-product-id="<?php echo $product['id']; ?>">
                         Add to Cart
                     </button>
-                    <button class="fp-btn fp-btn-buy buy-now-btn" data-product-id="<?php echo $product['id']; ?>">
-                        <svg viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>
-                        Buy Now
-                    </button>
-                </div>
-            </div>
-
-            <!-- Right Column: Details -->
-            <div class="fp-right-col">
-                <h1 class="fp-title"><?php echo htmlspecialchars($product['name']); ?></h1>
-                
-                <div style="margin-bottom: 12px;">
-                    <span class="fp-rating-badge">4.5 ★</span>
-                    <span style="color: #878787; font-size: 14px;">(<?php echo rand(100, 5000); ?> Ratings & <?php echo rand(10, 500); ?> Reviews)</span>
                 </div>
 
-                <div class="fp-price-row">
-                    <span class="fp-price">₹<?php echo number_format($product['price'], 0); ?></span>
-                    <?php if ($product['original_price'] > $product['price']): ?>
-                        <span class="fp-original-price">₹<?php echo number_format($product['original_price'], 0); ?></span>
-                        <span class="fp-discount">
-                            <?php echo round((($product['original_price'] - $product['price']) / $product['original_price']) * 100); ?>% off
-                        </span>
-                    <?php endif; ?>
+                <div class="wishlist-compare">
+                    <a href="#" class="wc-link">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        Browse Wishlist
+                    </a>
+                    <a href="#" class="wc-link">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M8 21H3v-5M21 3l-7 7M3 21l7-7"/></svg>
+                        Add to compare
+                    </a>
                 </div>
 
-                <!-- Offers -->
-                <div class="fp-section-title">Available offers</div>
-                <ul class="fp-offers-list">
-                    <li class="fp-offer-item">
-                        <span class="fp-tag-icon">🏷️</span>
-                        <span><b>Bank Offer</b> 5% Cashback on Axis Bank Card</span>
-                    </li>
-                    <li class="fp-offer-item">
-                        <span class="fp-tag-icon">🏷️</span>
-                        <span><b>Special Price</b> Get extra 10% off (price inclusive of cashback/coupon)</span>
-                    </li>
-                    <li class="fp-offer-item">
-                        <span class="fp-tag-icon">🏷️</span>
-                        <span><b>Partner Offer</b> Sign up for Grab&Go Pay Later and get ₹50 Gift Card</span>
-                    </li>
-                </ul>
-
-                <!-- Delivery Check -->
-                <div style="display: flex; gap: 40px; margin-bottom: 24px;">
-                    <div style="color: #878787; font-size: 14px; font-weight: 500; width: 100px;">Delivery</div>
-                    <div>
-                        <div class="fp-pincode-box">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="#2874f0" style="margin-right: 8px; margin-top: 4px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            <input type="text" class="fp-pincode-input" placeholder="Enter Delivery Pincode">
-                            <button class="fp-check-btn">Check</button>
-                        </div>
-                        <div style="font-size: 14px; font-weight: 700; color: #212121;">
-                            Delivery by <?php echo date('d M, l', strtotime('+2 days')); ?> 
-                            <span style="color: #388E3C; border-left: 1px solid #e0e0e0; padding-left: 8px; margin-left: 8px;">FREE</span>
+                <div class="meta-info">
+                    <div class="meta-row">
+                        <span class="meta-label">Categories:</span>
+                        <span><?php echo htmlspecialchars($product['category_name']); ?></span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Tag:</span>
+                        <span><?php echo htmlspecialchars($product['dietary_tags'] ?? 'premium'); ?></span>
+                    </div>
+                    <div class="meta-row" style="margin-top: 20px;">
+                        <span class="meta-label" style="margin-bottom: 10px; display: block;">Share this product:</span>
+                        <div style="display: flex; gap: 15px;">
+                            <a href="#" style="color: #666;"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+                            <a href="#" style="color: #666;"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg></a>
+                            <a href="#" style="color: #666;"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
                         </div>
                     </div>
                 </div>
-
-                <!-- Highlights / Specs -->
-                <div style="display: flex; gap: 40px; margin-top: 24px;">
-                    <div style="color: #878787; font-size: 14px; font-weight: 500; width: 100px;">Highlights</div>
-                    <div style="font-size: 14px; color: #212121;">
-                         <ul style="padding-left: 16px; margin: 0; line-height: 24px;">
-                            <li>Genuine <?php echo htmlspecialchars($product['category_name']); ?> Product</li>
-                            <li><?php echo !empty($product['stock']) ? 'In Stock' : 'Out of Stock'; ?></li>
-                            <?php if (!empty($product['dietary_tags'])): ?>
-                                <li>Tags: <?php echo htmlspecialchars($product['dietary_tags']); ?></li>
-                            <?php endif; ?>
-                            <li>Standard Warranty Applicable</li>
-                         </ul>
-                    </div>
-                </div>
-
-                <!-- Full Description -->
-                 <div style="display: flex; gap: 40px; margin-top: 24px;">
-                    <div style="color: #878787; font-size: 14px; font-weight: 500; width: 100px;">Description</div>
-                    <div class="fp-desc">
-                        <?php echo nl2br(htmlspecialchars($product['description'])); ?>
-                    </div>
-                </div>
-
-                <!-- Specifications Table -->
-                <div class="fp-section-title" style="margin-top: 40px; border: 1px solid #e0e0e0; padding: 16px; border-bottom: none; font-size: 20px; font-weight: 600;">Specifications</div>
-                <table class="fp-specs-table">
-                    <tr>
-                        <td><span class="fp-specs-label">In The Box</span></td>
-                        <td><span class="fp-specs-value">1 x <?php echo htmlspecialchars($product['name']); ?></span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="fp-specs-label">Model Number</span></td>
-                        <td><span class="fp-specs-value">GG-<?php echo str_pad($product['id'], 6, '0', STR_PAD_LEFT); ?></span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="fp-specs-label">Brand</span></td>
-                        <td><span class="fp-specs-value">Grab & Go Exclusive</span></td>
-                    </tr>
-                     <tr>
-                        <td><span class="fp-specs-label">Category</span></td>
-                        <td><span class="fp-specs-value"><?php echo htmlspecialchars($product['category_name']); ?></span></td>
-                    </tr>
-                     <?php if (stripos($product['category_name'], 'Electronics') !== false || stripos($product['name'], 'Laptop') !== false): ?>
-                        <tr><td colspan="2" style="background:#f0f0f0; font-weight:600;">Processor Features</td></tr>
-                        <tr><td><span class="fp-specs-label">Processor Brand</span></td><td><span class="fp-specs-value">Intel</span></td></tr>
-                        <tr><td><span class="fp-specs-label">Processor Name</span></td><td><span class="fp-specs-value">Core i5</span></td></tr>
-                        <tr><td><span class="fp-specs-label">SSD</span></td><td><span class="fp-specs-value">Yes</span></td></tr>
-                        <tr><td><span class="fp-specs-label">RAM</span></td><td><span class="fp-specs-value">16 GB</span></td></tr>
-                    <?php endif; ?>
-                </table>
-
             </div>
         </div>
+
+        <!-- Tabs -->
+        <div class="tabs-section">
+            <div class="tab-headers">
+                <button class="tab-btn active" onclick="switchTab('desc', this)">Description</button>
+                <button class="tab-btn" onclick="switchTab('reviews', this)">Reviews (1)</button>
+            </div>
+            <div id="tab-desc" class="tab-content">
+                <?php echo nl2br(htmlspecialchars($product['description'] ?: 'No detailed description available for this product.')); ?>
+                <br><br>
+                This product is part of our quality-checked inventory, ensuring you get the freshest and best items every time you shop at Grab & Go.
+            </div>
+            <div id="tab-reviews" class="tab-content" style="display: none;">
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
+                    <strong style="color: #333;">Savio Jose</strong> <span style="color: #999; font-size: 12px; margin-left: 10px;">March 11, 2026</span>
+                    <div style="color: #FFC107; margin: 5px 0;">★★★★★</div>
+                    <p style="margin: 0;">Excellent product! The quality is outstanding and it was ready for pickup very quickly. Highly recommend Grab & Go service.</p>
+                </div>
+                <p>Add your review below (Coming Soon)</p>
+            </div>
+        </div>
+
+        <!-- Related -->
+        <?php if ($related_result->num_rows > 0): ?>
+        <div class="related-section">
+            <h2 class="section-title-center">Related products</h2>
+            <div class="related-grid">
+                <?php while($rp = $related_result->fetch_assoc()): 
+                    $rpImg = $rp['image_url'] ?? 'images/placeholder.jpg';
+                    if (strpos($rpImg, 'http') !== 0) {
+                        $rpImg = (defined('BASE_URL') ? BASE_URL : '../') . $rpImg;
+                    }
+                ?>
+                <div class="rel-card">
+                    <a href="details.php?id=<?php echo $rp['id']; ?>" class="rel-img">
+                        <img src="<?php echo htmlspecialchars($rpImg); ?>" alt="<?php echo htmlspecialchars($rp['name']); ?>">
+                    </a>
+                    <div class="rel-body">
+                        <span class="rel-cat"><?php echo htmlspecialchars($product['category_name']); ?></span>
+                        <a href="details.php?id=<?php echo $rp['id']; ?>" class="rel-name"><?php echo htmlspecialchars($rp['name']); ?></a>
+                        <div class="rel-price">₹<?php echo number_format($rp['price'], 2); ?></div>
+                    </div>
+                </div>
+                <?php endwhile; ?>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 
 <script>
-    function changeImage(src) {
-        document.getElementById('mainProductImg').src = src;
+    function updateMainImg(src, el) {
+        document.getElementById('main-product-image').src = src;
+        document.querySelectorAll('.thumb-box').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    function changeQty(delta) {
+        const input = document.getElementById('product-qty');
+        let val = parseInt(input.value) + delta;
+        if (val < 1) val = 1;
+        input.value = val;
+    }
+
+    function switchTab(tab, el) {
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tab).style.display = 'block';
+        el.classList.add('active');
+    }
+
+    // ATC script bridge
+    document.querySelector('.btn-atc').addEventListener('click', function() {
+        const qty = parseInt(document.getElementById('product-qty').value);
+        const pid = this.dataset.productId;
+        
+        // Use existing cart system
+        addToCartAjax(pid, this, false, qty);
+    });
+
+    /**
+     * MODIFIED addToCartAjax to support quantity
+     */
+    async function addToCartAjax(productId, btn, redirect = false, qty = 1) {
+        const origText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'Adding…';
+
+        try {
+            const res = await fetch('../cart/cart-api.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'add', product_id: parseInt(productId), quantity: qty })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                if (typeof updateCartBadge === 'function') updateCartBadge(data.cart_count);
+                if (redirect) {
+                    window.location.href = '../cart/cart.php';
+                    return;
+                }
+                btn.innerHTML = '✓ Added to Cart!';
+                btn.style.background = '#00D563';
+                setTimeout(() => { 
+                    btn.innerHTML = origText; 
+                    btn.disabled = false;
+                    btn.style.background = '#333';
+                }, 2000);
+            } else {
+                alert(data.message || 'Error adding to cart');
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            }
+        } catch (e) {
+            btn.innerHTML = origText;
+            btn.disabled = false;
+        }
     }
 </script>
 

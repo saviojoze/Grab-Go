@@ -1,0 +1,20 @@
+[2026-03-11 04:49:44] Reset for saviojosekvr@gmail.com: HTTP 200 | Resp: {
+  "kind": "identitytoolkit#GetOobConfirmationCodeResponse",
+  "email": "saviojosekvr@gmail.com"
+}
+
+[2026-03-11 04:50:11] Reset for saviojose2028@mca.ajce.in: HTTP 200 | Resp: {
+  "kind": "identitytoolkit#GetOobConfirmationCodeResponse",
+  "email": "saviojose2028@mca.ajce.in"
+}
+
+[2026-03-11 04:50:19] Reset for saviojose2028@mca.ajce.in: HTTP 200 | Resp: {
+  "kind": "identitytoolkit#GetOobConfirmationCodeResponse",
+  "email": "saviojose2028@mca.ajce.in"
+}
+
+[2026-03-11 04:57:18] Reset for saviojose2028@mca.ajce.in: HTTP 200 | Resp: {
+  "kind": "identitytoolkit#GetOobConfirmationCodeResponse",
+  "email": "saviojose2028@mca.ajce.in"
+}
+
