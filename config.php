@@ -13,6 +13,7 @@ define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?? '');
 define('DB_NAME', getenv('DB_NAME') ?: 'grab_and_go');
+define('DB_PORT', getenv('DB_PORT') ?: 3306);
 
 // Google OAuth Configuration
 // TO GET YOUR CLIENT ID:
@@ -56,15 +57,29 @@ define('RAZORPAY_KEY_SECRET', getenv('RAZORPAY_KEY_SECRET'));
 
 // Create database connection
 try {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    $conn = mysqli_init();
+    if (!$conn) {
+        die("mysqli_init failed");
+    }
+
+    $ca_content = getenv('DB_SSL_CA_CONTENT');
+    if ($ca_content) {
+        // Save CA content to a temp file (Aiven requires SSL)
+        $ca_file = tempnam(sys_get_temp_dir(), 'ca-pem-');
+        file_put_contents($ca_file, $ca_content);
+        mysqli_ssl_set($conn, NULL, NULL, $ca_file, NULL, NULL);
+    }
+
+    if (!@mysqli_real_connect($conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, (int)DB_PORT)) {
+        throw new Exception(mysqli_connect_error());
+    }
 } catch (Exception $e) {
-    // Check for specific error codes if needed, but for now catch all
-    die("Connection failed: " . $e->getMessage() . " (Suggestion: Check if your MySQL server is running in XAMPP)");
+    die("Connection failed: " . $e->getMessage() . " (Check if your DB server is running or if DB_SSL_CA_CONTENT is correct)");
 }
 
-// Check connection (keep this for fallback if exceptions aren't thrown)
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Check connection (legacy fallback)
+if (mysqli_connect_errno()) {
+    die("Connection failed: " . mysqli_connect_error());
 }
 
 // Set charset to utf8mb4
