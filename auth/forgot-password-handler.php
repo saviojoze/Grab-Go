@@ -88,7 +88,9 @@ if (!$firebase_success && $smtp_configured) {
     $stmt2   = $conn->prepare("UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?");
     $stmt2->bind_param("ssi", $token, $expires, $user['id']);
     $stmt2->execute();
-    $reset_link = "http://localhost/Mini%20Project/auth/reset-password.php?token=" . $token;
+    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) ? "https" : "http";
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $reset_link = "$protocol://$host/auth/reset-password.php?token=" . $token;
 
     $mail = new PHPMailer(true);
     try {

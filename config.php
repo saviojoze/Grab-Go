@@ -26,7 +26,12 @@ define('DB_PORT', getenv('DB_PORT') ?: 3306);
 // 7. Copy the Client ID below
 define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID'));
 define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET'));
-define('GOOGLE_REDIRECT_URI', getenv('GOOGLE_REDIRECT_URI'));
+
+// Dynamically set Redirect URI to support both localhost and production (Railway)
+$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) ? "https" : "http";
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$default_redirect = "$protocol://$host/auth/google-callback.php";
+define('GOOGLE_REDIRECT_URI', getenv('GOOGLE_REDIRECT_URI') ?: $default_redirect);
 
 // Email Configuration (for password reset)
 define('SMTP_HOST', getenv('SMTP_HOST') ?: 'smtp.gmail.com');
