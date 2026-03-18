@@ -1,0 +1,16 @@
+.env
+.git
+.gitignore
+.dockerignore
+node_modules/
+vendor/
+backups/
+docs/
+database/
+scripts/
+*.log
+*.sql
+*.php.bak
+import_db.php
+import_to_railway.php
+docker-entrypoint.sh.bak
