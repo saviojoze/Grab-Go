@@ -57,7 +57,7 @@ if ($result->num_rows > 0) {
     
     // Determine redirect based on role
     if ($user['role'] === 'admin') {
-        $redirect = '../admin/index.php';
+        $redirect = 'admin/index.php';
     } else if ($user['role'] === 'staff') {
         $redirect = '../staff/orders.php';
     } else {

@@ -37,7 +37,7 @@ if ($action === 'login') {
             
             // Redirect based on role
             if ($user['role'] === 'admin') {
-                redirect('../admin/dashboard.php');
+                redirect('admin/index.php');
             } else if ($user['role'] === 'staff') {
                 redirect('../staff/orders.php');
             } else {
