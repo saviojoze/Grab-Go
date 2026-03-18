@@ -9,11 +9,11 @@ require_once __DIR__ . '/includes/EnvLoader.php';
 EnvLoader::load(__DIR__ . '/.env');
 
 // Database credentials
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?? '');
-define('DB_NAME', getenv('DB_NAME') ?: 'grab_and_go');
-define('DB_PORT', getenv('DB_PORT') ?: 3306);
+define('DB_HOST', getenv('DB_HOST') ?: (getenv('MYSQLHOST') ?: 'localhost'));
+define('DB_USER', getenv('DB_USER') ?: (getenv('MYSQLUSER') ?: 'root'));
+define('DB_PASS', getenv('DB_PASS') ?? (getenv('MYSQLPASSWORD') ?: ''));
+define('DB_NAME', getenv('DB_NAME') ?: (getenv('MYSQLDATABASE') ?: 'grab_and_go'));
+define('DB_PORT', getenv('DB_PORT') ?: (getenv('MYSQLPORT') ?: 3306));
 
 // Google OAuth Configuration
 // TO GET YOUR CLIENT ID:
