@@ -9,6 +9,18 @@
     <link rel="stylesheet" href="../css/components.css">
     <link rel="stylesheet" href="../css/auth.css">
     
+    <style>
+        /* Hide native browser password toggle to avoid double icons */
+        input::-ms-reveal,
+        input::-ms-clear {
+            display: none !important;
+        }
+        input::-webkit-contacts-auto-fill-button,
+        input::-webkit-credentials-auto-fill-button {
+            display: none !important;
+        }
+    </style>
+    
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>

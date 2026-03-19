@@ -103,6 +103,16 @@ if (isset($_GET['error'])) {
             color: var(--theme-green) !important; 
             font-weight: 700;
         }
+
+        /* Hide native browser password toggle to avoid double icons */
+        input::-ms-reveal,
+        input::-ms-clear {
+            display: none !important;
+        }
+        input::-webkit-contacts-auto-fill-button,
+        input::-webkit-credentials-auto-fill-button {
+            display: none !important;
+        }
     </style>
     
     <!-- Firebase SDK -->
