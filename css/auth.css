@@ -105,6 +105,19 @@
     color: var(--color-text-light);
 }
 
+/* Hide native browser password toggle to avoid double icons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+}
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-password-reveal-button {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 .forgot-password {
     display: block;
     text-align: right;

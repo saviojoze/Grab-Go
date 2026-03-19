@@ -31,7 +31,7 @@ if (isset($_GET['error'])) {
     <title>Welcome Back - Grab & Go</title>
     <link rel="stylesheet" href="../css/design-system.css">
     <link rel="stylesheet" href="../css/components.css">
-    <link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="../css/auth.css?v=<?php echo time(); ?>">
     
     <style>
         /* Shared variables */
@@ -110,8 +110,11 @@ if (isset($_GET['error'])) {
             display: none !important;
         }
         input::-webkit-contacts-auto-fill-button,
-        input::-webkit-credentials-auto-fill-button {
+        input::-webkit-credentials-auto-fill-button,
+        input::-webkit-password-reveal-button {
             display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
         }
     </style>
     

@@ -7,7 +7,7 @@
     <title>Create Account - Grab & Go</title>
     <link rel="stylesheet" href="../css/design-system.css">
     <link rel="stylesheet" href="../css/components.css">
-    <link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="../css/auth.css?v=<?php echo time(); ?>">
     
     <style>
         /* Hide native browser password toggle to avoid double icons */
