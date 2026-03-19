@@ -36,28 +36,28 @@
                     <h4>Company</h4>
                     <ul class="footer-links">
                         <li><a href="<?php echo BASE_URL; ?>products/listing.php">Our Shop</a></li>
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Latest Insights</a></li>
-                        <li><a href="#">Terms & Conditions</a></li>
+                        <li><a href="#" onclick="showFooterToast('About Us page coming soon!'); return false;">About Us</a></li>
+                        <li><a href="#" onclick="showFooterToast('Latest Insights blog coming soon!'); return false;">Latest Insights</a></li>
+                        <li><a href="#" onclick="showFooterToast('Terms & Conditions page coming soon!'); return false;">Terms & Conditions</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Customer Care</h4>
                     <ul class="footer-links">
-                        <li><a href="#">Contact Support</a></li>
-                        <li><a href="#">Track Orders</a></li>
-                        <li><a href="#">Shipping FAQ</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#" onclick="showFooterToast('Support Center coming soon!'); return false;">Contact Support</a></li>
+                        <li><a href="<?php echo BASE_URL; ?>orders/my-orders.php">Track Orders</a></li>
+                        <li><a href="#" onclick="showFooterToast('Shipping FAQ coming soon!'); return false;">Shipping FAQ</a></li>
+                        <li><a href="#" onclick="showFooterToast('Privacy Policy coming soon!'); return false;">Privacy Policy</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section footer-newsletter">
                     <h4>Newsletter</h4>
                     <p class="footer-description mb-lg">Stay updated with our latest offers and grocery tips.</p>
-                    <form class="flex gap-sm">
-                        <input type="email" class="form-input" placeholder="Your email address" style="flex: 1;">
-                        <button type="submit" class="btn btn-primary">
+                    <form class="flex gap-sm" id="newsletterForm" onsubmit="handleNewsletterSubmit(event)">
+                        <input type="email" id="nlEmail" class="form-input" placeholder="Your email address" style="flex: 1;" required>
+                        <button type="submit" class="btn btn-primary" id="nlSubmitBtn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -66,6 +66,60 @@
                     </form>
                 </div>
             </div>
+            
+            <script>
+            function showFooterToast(msg, type = 'success') {
+                let t = document.getElementById('footer-toast');
+                if (!t) {
+                    t = document.createElement('div');
+                    t.id = 'footer-toast';
+                    t.style.cssText = `
+                        position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(60px);
+                        background:#1a4d1e; color:#fff; padding:12px 24px; border-radius:30px;
+                        font-size:0.85rem; font-weight:600; z-index:9999; opacity:0;
+                        transition:all .3s cubic-bezier(.4,0,.2,1); white-space:nowrap;
+                        box-shadow:0 6px 20px rgba(0,0,0,.25);
+                    `;
+                    document.body.appendChild(t);
+                }
+                if (type === 'error') t.style.background = '#dc2626';
+                else if (type === 'success') t.style.background = '#1a4d1e';
+                else if (type === 'info') t.style.background = '#18181b';
+                
+                t.textContent = msg;
+                t.style.opacity = '1';
+                t.style.transform = 'translateX(-50%) translateY(0)';
+                clearTimeout(t._timer);
+                t._timer = setTimeout(() => {
+                    t.style.opacity = '0';
+                    t.style.transform = 'translateX(-50%) translateY(60px)';
+                }, 3000);
+            }
+
+            function handleNewsletterSubmit(e) {
+                e.preventDefault();
+                const btn = document.getElementById('nlSubmitBtn');
+                const emailInput = document.getElementById('nlEmail');
+                if(!emailInput.value) return;
+                
+                // Visual feedback
+                const origHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
+                
+                // Simulate an API call
+                setTimeout(() => {
+                    showFooterToast('🎉 Success! You are now subscribed to our newsletter.', 'success');
+                    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                    emailInput.value = '';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = origHtml;
+                        btn.disabled = false;
+                    }, 2000);
+                }, 800);
+            }
+            </script>
             
             <div class="footer-bottom">
                 <p>&copy; 2025 Grab & Go. All rights reserved. Designed by Savio Joze</p>
