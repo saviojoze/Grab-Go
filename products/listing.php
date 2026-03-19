@@ -179,7 +179,10 @@ $cat_icons = [
                 <ul class="ref-flist">
                     <li>
                         <a href="listing.php" class="ref-flink <?php echo empty($selected_categories) && !$search_term ? 'ref-flink-active' : ''; ?>">
-                            All Products
+                            <span class="ref-cat-label">
+                                <span class="ref-cat-icon">🏪</span>
+                                <span class="ref-cat-text">All Products</span>
+                            </span>
                             <span class="ref-fcnt">(<?php echo $total_all; ?>)</span>
                         </a>
                     </li>
@@ -191,10 +194,39 @@ $cat_icons = [
                             ? 'listing.php'
                             : 'listing.php?categories=' . $cat['id'];
                         $cnt = $cat_counts[$cat['id']] ?? 0;
+                        
+                        $cname = trim($cat['name']);
+                        $icon = '🏷️';
+                        if (preg_match('/^([^\p{L}\p{N}\s]+)\s*(.*)$/u', $cname, $matches) && !empty($matches[1])) {
+                            $icon = $matches[1];
+                            $cname = $matches[2] ? $matches[2] : $cname;
+                        } else {
+                            if (isset($cat_icons[$cname])) {
+                                $icon = $cat_icons[$cname];
+                            } else {
+                                $lc = strtolower($cname);
+                                if (strpos($lc, 'deal') !== false || strpos($lc, 'hot') !== false) $icon = '🔥';
+                                else if (strpos($lc, 'electronic') !== false || strpos($lc, 'tech') !== false) $icon = '💻';
+                                else if (strpos($lc, 'appliance') !== false || strpos($lc, 'home') !== false) $icon = '📺';
+                                else if (strpos($lc, 'drink') !== false || strpos($lc, 'beverage') !== false || strpos($lc, 'soda') !== false) $icon = '🥤';
+                                else if (strpos($lc, 'veg') !== false || strpos($lc, 'produce') !== false) $icon = '🥬';
+                                else if (strpos($lc, 'fruit') !== false) $icon = '🍎';
+                                else if (strpos($lc, 'cake') !== false || strpos($lc, 'bakery') !== false) $icon = '🍰';
+                                else if (strpos($lc, 'dairy') !== false || strpos($lc, 'milk') !== false) $icon = '🥛';
+                                else if (strpos($lc, 'juice') !== false) $icon = '🍹';
+                                else if (strpos($lc, 'meat') !== false) $icon = '🥩';
+                                else if (strpos($lc, 'snack') !== false) $icon = '🍿';
+                                else if (strpos($lc, 'clean') !== false) $icon = '🧹';
+                                else if (strpos($lc, 'frozen') !== false) $icon = '🧊';
+                            }
+                        }
                     ?>
                     <li>
                         <a href="<?php echo $href; ?>" class="ref-flink <?php echo $isActive ? 'ref-flink-active' : ''; ?>">
-                            <?php echo htmlspecialchars($cat['name']); ?>
+                            <span class="ref-cat-label">
+                                <span class="ref-cat-icon"><?php echo $icon; ?></span>
+                                <span class="ref-cat-text"><?php echo htmlspecialchars($cname); ?></span>
+                            </span>
                             <span class="ref-fcnt">(<?php echo $cnt; ?>)</span>
                         </a>
                     </li>
@@ -897,6 +929,11 @@ document.addEventListener('DOMContentLoaded', () => {
     padding: 1px 7px; font-weight: 600;
 }
 .ref-flink-active .ref-fcnt { background: var(--gm); color: var(--gd); }
+
+.ref-cat-label { display: flex; align-items: center; gap: 8px; }
+.ref-cat-icon { font-size: 1.15rem; transition: transform 0.2s cubic-bezier(.34,1.56,.64,1); display: inline-block; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.12)); }
+.ref-flink:hover .ref-cat-icon { transform: scale(1.3) rotate(-8deg); }
+.ref-cat-text { transition: color 0.15s; }
 
 /* Price slider visual */
 .ref-price-track {
