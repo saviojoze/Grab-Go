@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Insert product
     $stmt = $conn->prepare("INSERT INTO products (name, category_id, price, original_price, stock, unit, image_url, description, dietary_tags, is_sale) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("siddississi", $name, $category_id, $price, $original_price, $stock, $unit, $image_url, $description, $dietary_tags, $is_sale);
+    $stmt->bind_param("siddissssi", $name, $category_id, $price, $original_price, $stock, $unit, $image_url, $description, $dietary_tags, $is_sale);
     
     if ($stmt->execute()) {
         $_SESSION['success'] = 'Product added to inventory';
