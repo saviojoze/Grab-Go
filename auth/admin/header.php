@@ -11,9 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="../css/design-system.css">
-    <link rel="stylesheet" href="../css/admin.css?v=<?php echo time() + 5; ?>">
-    <link rel="stylesheet" href="../css/admin-theme.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="../../css/design-system.css">
+    <link rel="stylesheet" href="../../css/admin.css?v=<?php echo time() + 5; ?>">
+    <link rel="stylesheet" href="../../css/admin-theme.css?v=<?php echo time(); ?>">
     
     <script>
         // Init Theme
@@ -26,7 +26,7 @@
     </script>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="../images/logo.svg">
+    <link rel="icon" type="image/svg+xml" href="../../images/logo.svg">
 </head>
 <body class="admin-body">
     
@@ -143,7 +143,7 @@
                 </button>
                 
                 <div class="user-dropdown-menu" id="userDropdownMenu">
-                    <a href="../products/listing.php" class="dropdown-item">
+                    <a href="../../products/listing.php" class="dropdown-item">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                         </svg>
@@ -157,7 +157,7 @@
                         Profile Settings
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a href="../auth/logout.php" class="dropdown-item text-danger">
+                    <a href="../../auth/logout.php" class="dropdown-item text-danger">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
