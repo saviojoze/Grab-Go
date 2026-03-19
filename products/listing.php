@@ -15,6 +15,8 @@ $sort_by             = $_GET['sort'] ?? 'default';
 $search_term         = trim($_GET['search'] ?? '');
 $avail_filter        = $_GET['avail'] ?? ''; // 'in' | 'out'
 $promo_filter        = $_GET['promo'] ?? ''; // 'sale' | 'bestseller'
+$min_price           = isset($_GET['min_price']) ? floatval($_GET['min_price']) : 0;
+$max_price           = isset($_GET['max_price']) ? floatval($_GET['max_price']) : 500;
 
 // ── Query ─────────────────────────────────────
 $query = "SELECT p.*, c.name as category_name
@@ -29,6 +31,13 @@ if (!empty($selected_categories)) {
 if ($avail_filter === 'in')  $query .= " AND p.stock > 0";
 if ($avail_filter === 'out') $query .= " AND p.stock = 0";
 if ($promo_filter === 'sale') $query .= " AND p.original_price > p.price";
+
+if ($max_price > 0 && $max_price < 500) {
+    if ($min_price > 0) $query .= " AND p.price BETWEEN $min_price AND $max_price";
+    else $query .= " AND p.price <= $max_price";
+} elseif ($min_price > 0) {
+    $query .= " AND p.price >= $min_price";
+}
 
 if ($search_term !== '') {
     $st = $conn->real_escape_string($search_term);
@@ -193,20 +202,22 @@ $cat_icons = [
                 </ul>
             </div>
 
-            <!-- Price (display only) -->
+            <!-- Price Filter -->
             <div class="ref-fblock">
                 <h3 class="ref-fblock-title">Price</h3>
-                <div class="ref-price-slider-wrap">
+                <div class="ref-price-slider-wrap" id="priceFilterWrapper">
                     <div class="ref-price-track">
-                        <div class="ref-price-fill"></div>
-                        <div class="ref-price-thumb ref-price-thumb-l"></div>
-                        <div class="ref-price-thumb ref-price-thumb-r"></div>
+                        <div class="ref-price-fill" id="rangeFill"></div>
+                        <input type="range" class="rn-min" id="minPriceInput" min="0" max="500" value="<?php echo $min_price; ?>" step="10">
+                        <input type="range" class="rn-max" id="maxPriceInput" min="0" max="500" value="<?php echo $max_price; ?>" step="10">
                     </div>
-                    <div class="ref-price-labels">
-                        <span>₹0</span>
-                        <span>₹500+</span>
+                    <div class="ref-price-labels" style="margin-top: 20px;">
+                        <span id="minPriceLabel">₹<?php echo $min_price; ?></span>
+                        <span id="maxPriceLabel"><?php echo $max_price >= 500 ? '₹500+' : '₹'.$max_price; ?></span>
                     </div>
-                    <div class="ref-price-sort-links">
+                    <button class="btn-apply-price" onclick="applyPriceFilter()">Apply Filter</button>
+                    
+                    <div class="ref-price-sort-links" style="margin-top: 15px;">
                         <?php $pBase = !empty($selected_categories) ? '?categories='.implode(',', $selected_categories).'&' : '?'; ?>
                         <a href="listing.php<?php echo $pBase; ?>sort=price_low" class="ref-price-sort-btn <?php echo $sort_by==='price_low' ? 'ref-price-sort-active' : ''; ?>">Low → High</a>
                         <a href="listing.php<?php echo $pBase; ?>sort=price_high" class="ref-price-sort-btn <?php echo $sort_by==='price_high' ? 'ref-price-sort-active' : ''; ?>">High → Low</a>
@@ -528,7 +539,55 @@ async function addToCartAjax(productId, btn, redirect = false) {
     }
 }
 
+function applyPriceFilter() {
+    const min = document.getElementById('minPriceInput').value;
+    const max = document.getElementById('maxPriceInput').value;
+    const p = new URLSearchParams(window.location.search);
+    if(parseInt(min) > 0) p.set('min_price', min); else p.delete('min_price');
+    if(parseInt(max) < 500) p.set('max_price', max); else p.delete('max_price');
+    window.location.href = '?' + p.toString();
+}
+
+function initPriceSlider() {
+    const minInput = document.getElementById('minPriceInput');
+    const maxInput = document.getElementById('maxPriceInput');
+    const fill = document.getElementById('rangeFill');
+    const minLabel = document.getElementById('minPriceLabel');
+    const maxLabel = document.getElementById('maxPriceLabel');
+    
+    if(!minInput || !maxInput) return;
+
+    function updateView() {
+        let minV = parseInt(minInput.value);
+        let maxV = parseInt(maxInput.value);
+        if (minV > maxV) { let tmp = minV; minV = maxV; maxV = tmp; }
+        
+        const minPercent = (minV / minInput.max) * 100;
+        const maxPercent = (maxV / maxInput.max) * 100;
+        
+        fill.style.left = minPercent + '%';
+        fill.style.width = (maxPercent - minPercent) + '%';
+        
+        minLabel.textContent = '₹' + minV;
+        maxLabel.textContent = maxV >= 500 ? '₹500+' : '₹' + maxV;
+    }
+    
+    minInput.addEventListener('input', () => {
+        if(parseInt(minInput.value) > parseInt(maxInput.value) - 10) minInput.value = maxInput.value - 10;
+        updateView();
+    });
+    
+    maxInput.addEventListener('input', () => {
+        if(parseInt(maxInput.value) < parseInt(minInput.value) + 10) maxInput.value = parseInt(minInput.value) + 10;
+        updateView();
+    });
+    
+    updateView();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    initPriceSlider();
+
     /* Banner init — sets pointer-events correctly from the start */
     bnrGo(0);
     bnrStartAuto();
@@ -846,26 +905,49 @@ document.addEventListener('DOMContentLoaded', () => {
     margin: 12px 0;
 }
 .ref-price-fill {
-    position: absolute; left: 0; right: 0;
+    position: absolute; left: 0; width: 100%;
     height: 100%;
     background: linear-gradient(to right, var(--g), #4caf50);
     border-radius: 10px;
+    z-index: 1;
 }
-.ref-price-thumb {
-    position: absolute; top: 50%;
+.ref-price-track input[type=range] {
+    position: absolute;
+    top: -6px; left: -2px; width: calc(100% + 4px);
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    z-index: 2;
+}
+.ref-price-track input[type=range]::-webkit-slider-thumb {
+    pointer-events: auto;
+    -webkit-appearance: none;
+    appearance: none;
     width: 18px; height: 18px; border-radius: 50%;
     background: var(--white); border: 2.5px solid var(--g);
     box-shadow: var(--shadow-sm), var(--green-glow);
-    transform: translateY(-50%);
     cursor: pointer;
 }
-.ref-price-thumb-l { left: 0; }
-.ref-price-thumb-r { right: 0; }
+.ref-price-track input[type=range]::-moz-range-thumb {
+    pointer-events: auto;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--white); border: 2.5px solid var(--g);
+    box-shadow: var(--shadow-sm), var(--green-glow);
+    cursor: pointer;
+}
 .ref-price-labels {
     display: flex; justify-content: space-between;
     font-size: 0.75rem; color: var(--t1); font-weight: 700;
     margin-top: 8px;
 }
+.btn-apply-price {
+    display: block; width: 100%; text-align: center; font-size: 0.75rem;
+    font-weight: 700; color: #fff; background: var(--g);
+    padding: 6px; border-radius: 6px; cursor: pointer; border: none;
+    transition: all .2s; margin-top: 10px;
+}
+.btn-apply-price:hover { filter: brightness(1.1); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
 .ref-price-sort-links { display: flex; gap: 6px; margin-top: 12px; }
 .ref-price-sort-btn {
     font-size: 0.72rem; font-weight: 700; color: var(--t2);
