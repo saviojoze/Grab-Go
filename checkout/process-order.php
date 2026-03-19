@@ -83,12 +83,21 @@ try {
     
     $order_id = $conn->insert_id;
     
-    // Insert order items
+    // Insert order items and deduct stock
     $stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES (?, ?, ?, ?, ?)");
+    $update_stock = $conn->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
     
     foreach ($cart_items as $item) {
         $stmt->bind_param("iisid", $order_id, $item['product_id'], $item['name'], $item['quantity'], $item['price']);
         $stmt->execute();
+
+        // Reduce stock atomically
+        $update_stock->bind_param("iii", $item['quantity'], $item['product_id'], $item['quantity']);
+        $update_stock->execute();
+        
+        if ($update_stock->affected_rows === 0) {
+            throw new Exception("Item '" . $item['name'] . "' is out of stock!");
+        }
     }
     
     // Clear cart
@@ -109,6 +118,6 @@ try {
 } catch (Exception $e) {
     // Rollback on error
     $conn->rollback();
-    redirect('checkout.php?error=processing');
+    redirect('checkout.php?error=' . urlencode($e->getMessage()));
 }
 ?>

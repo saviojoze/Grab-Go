@@ -59,6 +59,16 @@ require_once __DIR__ . '/../includes/header.php';
             <p class="text-secondary">Complete your order. Please check all details.</p>
         </div>
         
+        <?php if (isset($_GET['error'])): ?>
+            <div style="background:#fee2e2; color:#b91c1c; padding:15px; border-radius:8px; margin-bottom:20px; font-weight:500; text-align:center; border: 1px solid #fca5a5;">
+                <?php 
+                if ($_GET['error'] === 'required') echo "Please fill all required fields.";
+                else if ($_GET['error'] === 'processing') echo "An error occurred while processing your order.";
+                else echo htmlspecialchars(urldecode($_GET['error']));
+                ?>
+            </div>
+        <?php endif; ?>
+        
         <div class="checkout-content">
             <!-- Checkout Form -->
             <form action="process-order.php" method="POST" class="checkout-form" data-validate>

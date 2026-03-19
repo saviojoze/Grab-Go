@@ -120,11 +120,21 @@ switch ($method) {
             $order_stmt->execute();
             $order_id = $conn->insert_id;
 
-            // 3. Insert Order Items
+            // 3. Insert Order Items and deduct stock
             $item_stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES (?, ?, ?, ?, ?)");
+            $update_stock = $conn->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
+            
             foreach ($cart_items as $item) {
                 $item_stmt->bind_param("iisid", $order_id, $item['product_id'], $item['name'], $item['quantity'], $item['price']);
                 $item_stmt->execute();
+
+                // Reduce stock atomically
+                $update_stock->bind_param("iii", $item['quantity'], $item['product_id'], $item['quantity']);
+                $update_stock->execute();
+                
+                if ($update_stock->affected_rows === 0) {
+                    throw new Exception("Item '" . $item['name'] . "' is out of stock!");
+                }
             }
 
             // 4. Clear Cart

@@ -40,21 +40,26 @@ if ($action === 'add') {
     }
     
     $product = $result->fetch_assoc();
-    if ($product['stock'] < $quantity) {
-        echo json_encode(['success' => false, 'message' => 'Insufficient stock']);
-        exit;
-    }
-    
     // Check if item already in cart
     $stmt = $conn->prepare("SELECT id, quantity FROM cart WHERE user_id = ? AND product_id = ?");
     $stmt->bind_param("ii", $user_id, $product_id);
     $stmt->execute();
     $result = $stmt->get_result();
     
+    $existing_qty = 0;
+    if ($result->num_rows > 0) {
+        $cart_item = $result->fetch_assoc();
+        $existing_qty = $cart_item['quantity'];
+    }
+    
+    if ($product['stock'] < ($existing_qty + $quantity)) {
+        echo json_encode(['success' => false, 'message' => 'Insufficient stock']);
+        exit;
+    }
+    
     if ($result->num_rows > 0) {
         // Update quantity
-        $cart_item = $result->fetch_assoc();
-        $new_quantity = $cart_item['quantity'] + $quantity;
+        $new_quantity = $existing_qty + $quantity;
         
         $stmt = $conn->prepare("UPDATE cart SET quantity = ? WHERE id = ?");
         $stmt->bind_param("ii", $new_quantity, $cart_item['id']);
@@ -92,8 +97,8 @@ else if ($action === 'update') {
         exit;
     }
     
-    // Verify cart item belongs to user
-    $stmt = $conn->prepare("SELECT product_id FROM cart WHERE id = ? AND user_id = ?");
+    // Verify cart item belongs to user and get stock
+    $stmt = $conn->prepare("SELECT c.product_id, p.stock FROM cart c JOIN products p ON c.product_id = p.id WHERE c.id = ? AND c.user_id = ?");
     $stmt->bind_param("ii", $cart_id, $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -102,6 +107,13 @@ else if ($action === 'update') {
         echo json_encode(['success' => false, 'message' => 'Cart item not found']);
         exit;
     }
+    
+    $cart_item = $result->fetch_assoc();
+    if ($cart_item['stock'] < $quantity) {
+        echo json_encode(['success' => false, 'message' => 'Insufficient stock']);
+        exit;
+    }
+
     
     // Update quantity
     $stmt = $conn->prepare("UPDATE cart SET quantity = ? WHERE id = ?");

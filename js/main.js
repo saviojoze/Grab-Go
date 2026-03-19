@@ -99,11 +99,16 @@ const Cart = {
 
             if (data.success) {
                 location.reload(); // Reload to update totals
+            } else {
+                alert(data.message || 'Error updating quantity');
+                location.reload(); // Reload to revert UI
             }
 
             return data;
         } catch (error) {
             console.error('Error updating quantity:', error);
+            alert('An unexpected error occurred.');
+            location.reload();
         }
     },
 
