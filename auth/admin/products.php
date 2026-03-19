@@ -127,10 +127,10 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY name");
                                 <td>
                                     <div class="product-cell">
                                         <img 
-                                            src="../<?php echo htmlspecialchars($product['image_url'] ?? 'images/placeholder.jpg'); ?>" 
+                                            src="<?php echo BASE_URL . (!empty($product['image_url']) ? $product['image_url'] : 'images/placeholder.jpg'); ?>" 
                                             alt="<?php echo htmlspecialchars($product['name']); ?>"
                                             class="product-thumb"
-                                            onerror="this.onerror=null; this.src='../images/placeholder.jpg'"
+                                            onerror="this.onerror=null; this.src='<?php echo BASE_URL; ?>images/placeholder.jpg'"
                                         >
                                         <div>
                                             <h4><?php echo htmlspecialchars($product['name']); ?></h4>
