@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if (in_array($ext, $allowed)) {
             // Check if upload directory exists, create if not
-            $upload_dir = '../images/products/';
+            $upload_dir = __DIR__ . '/../../images/products/';
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
@@ -45,8 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
                 // Delete old image if exists and is not a placeholder
-                if ($current_image && $current_image != '' && file_exists('../' . $current_image)) {
-                    @unlink('../' . $current_image);
+                if ($current_image && $current_image != '' && file_exists(__DIR__ . '/../../' . $current_image)) {
+                    @unlink(__DIR__ . '/../../' . $current_image);
                 }
                 $image_url = 'images/products/' . $new_filename;
             } else {

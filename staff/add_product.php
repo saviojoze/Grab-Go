@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if (in_array($ext, $allowed)) {
             // Check if upload directory exists, create if not
-            $upload_dir = '../images/products/';
+            $upload_dir = __DIR__ . '/../images/products/';
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
